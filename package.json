@@ -12,12 +12,15 @@
     "@fluentui/react-components": "^9.6.1",
     "@fluentui/react-icons": "^2.0.186",
     "@typescript-eslint/parser": "5",
+    "html-to-image": "^1.10.8",
     "localforage": "^1.10.0",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@douyinfe/semi-ui": "^2.22.1",
+    "@types/lodash": "^4.14.186",
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
     "@typescript-eslint/eslint-plugin": "^5.41.0",

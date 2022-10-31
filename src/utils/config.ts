@@ -2,13 +2,7 @@ export interface Config {
   [protocolVersion: string]: {
     // how large is one item. range: 1-71
     bitSize: number
-    rating: {
-      ratingType: 'star'
-      count: number
-      allowClear?: boolean
-      allowHalf?: boolean
-      description?: string
-    }
+    ratingType: 'xp-star'
     items: string[]
     sections: Array<{
       displayName: string
@@ -19,14 +13,8 @@ export interface Config {
 
 export const config: Config = {
   v1: {
-    bitSize: 6,
-    rating: {
-      ratingType: 'star',
-      count: 5,
-      allowClear: true,
-      allowHalf: false,
-      description: '再次点击星星可取消评分'
-    },
+    bitSize: 7,
+    ratingType: 'xp-star',
     items: ['轮奸'],
     sections: [
       {
