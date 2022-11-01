@@ -62,9 +62,9 @@ export const MainPage = () => {
   const getDesc = (item: string) => {
     const value = data.get(item)
     if (isUndefined(value)) {
-      return ''
+      return '未知'
     }
-    return [['', '试过'][value.book], ['', '绝不', '不喜欢', '一般', '喜欢', '最爱'][value.star]].filter(el => el)
+    return [['', '试过'][value.book], ['未知', '绝不', '不喜欢', '一般', '喜欢', '最爱'][value.star]].filter(el => el)
       .join('，')
   }
   return (<div className="w-screen h-screen flex flex-col">
@@ -91,6 +91,10 @@ export const MainPage = () => {
         <span className={'ml-4'}>扫描二维码或访问 xp-oobe.misaka.org，开始制作你的 xp 镜像</span>
       </div>}
       {config.v1.sections.map((section) => {
+        if ('desc' in section) {
+          return <div key={section.desc} className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.desc}</div>
+        }
+
         return <div key={section.displayName}>
           <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.displayName}</div>
           {section.items.map((item) => {
@@ -132,6 +136,7 @@ export const MainPage = () => {
     {screenShotVisible &&
       <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
         {!screenShotUrl && <>
+          <span className={'text-xl mb-2 text-yellow-500'}>目前截图功能会爆内存，正在优化中</span>
           <span className={'text-xl mb-2'}>你可以使用此功能生成结果的截图。</span>
           <span className={'text-base mb-4'}>注意：为了保持截图生成零成本，截图将在本地生成。由于技术限制，点击下面的生成按钮后网页会<span
             className={'text-2xl text-yellow-500'}>无反应 5~30 秒</span>，请耐心等待。
