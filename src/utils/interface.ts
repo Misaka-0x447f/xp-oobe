@@ -33,7 +33,7 @@ export interface Data {
 // 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~!'()*-
 export const encodeAndSave = async (data: Data) => {
   const sourceBitSize = config[data.protocolVersion].bitSize
-  const dataSequence = config[data.protocolVersion].items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, digits.length)).join('')
+  const dataSequence = config[data.protocolVersion].items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).join('')
   const encoded = `${data.protocolVersion}.${convertBase(dataSequence, sourceBitSize, digits.length)}`
   await localforage.setItem('data', encoded)
   const url = new URL(window.location.href)

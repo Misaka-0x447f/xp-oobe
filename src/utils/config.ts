@@ -13,13 +13,13 @@ export interface Config {
 
 export const config: Config = {
   v1: {
-    bitSize: 7,
+    bitSize: 12,
     ratingType: 'xp-star',
-    items: ['多人性交', '深喉', '口交'],
+    items: ['多人性交', '深喉', '口交', '颜射', '乳交', '后入', '内射', '拉珠', '扩张', '塞子(小)', '塞子(中)', '塞子(大)', '阴道扩张', '阴道拳交', '肛门拳交'],
     sections: [
       {
-        displayName: '性奴',
-        items: ['多人性交', '深喉', '口交']
+        displayName: '性偶',
+        items: ['多人性交', '深喉', '口交', '颜射', '乳交', '后入', '内射', '拉珠', '扩张', '塞子(小)', '塞子(中)', '塞子(大)', '阴道扩张', '阴道拳交', '肛门拳交']
       }
     ]
   }
