@@ -13,6 +13,7 @@ import * as htmlToImage from 'html-to-image'
 import { sleep } from '../utils/lang'
 import { clear, decodeOrLoad, encodeAndSave } from '../utils/interface'
 import { useBeforeMount, useMixedState } from '../utils/hooks'
+import qrcode from '~/assets/qrcode.png'
 
 export const MainPage = () => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
@@ -24,7 +25,7 @@ export const MainPage = () => {
 
   const screenshot = async () => {
     setLoading(val => val + 1)
-    await sleep(500)
+    await sleep(1000)
     const el = document.querySelector('#answer-zone') as HTMLElement
     if (!el) {
       Notification.error({ content: '无法执行截图，因为找不到目标元素。' })
@@ -84,9 +85,13 @@ export const MainPage = () => {
       <TooltipButton onClick={async () => await save()} active={!!saveUrl}><Save28Regular/></TooltipButton>
     </div>
     {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
-    <div className={'bg-[#242424]'}>
+    <div className={'bg-[#242424]'} id={'answer-zone'}>
+      {!!loading && <div className={'m-2 pt-2 flex items-center'}>
+        <img className={'w-24 h-24'} alt={'website qrcode'} src={qrcode}></img>
+        <span className={'ml-4'}>扫描二维码或访问 xp-oobe.misaka.org，开始制作你的 xp 镜像</span>
+      </div>}
       {config.v1.sections.map((section) => {
-        return <div key={section.displayName} id={'answer-zone'}>
+        return <div key={section.displayName}>
           <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.displayName}</div>
           {section.items.map((item) => {
             return <div key={item} className={'flex h-12 px-4 box-border items-center justify-between'}>
@@ -125,8 +130,9 @@ export const MainPage = () => {
       </div>
     </div>}
     {screenShotVisible &&
-      <div className={'absolute bg-blue-900 mt-12 w-full h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
+      <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
         {!screenShotUrl && <>
+          <span className={'text-xl mb-2'}>你可以使用此功能生成结果的截图。</span>
           <span className={'text-base mb-4'}>注意：为了保持截图生成零成本，截图将在本地生成。由于技术限制，点击下面的生成按钮后网页会<span
             className={'text-2xl text-yellow-500'}>无反应 5~30 秒</span>，请耐心等待。
           </span>
@@ -137,7 +143,7 @@ export const MainPage = () => {
           <span>结果截图已经就绪。</span>
           <span>长按下面的图片（iOS 需要长按<span
             className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
-          <img className={'max-h-48 object-cover object-left-top my-4'}
+          <img className={'max-h-128 object-cover object-left-top my-4'}
                style={{ maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 60%, transparent 100%)' }}
                alt={'result screenshot'} src={screenShotUrl}/>
           <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
@@ -151,8 +157,8 @@ export const MainPage = () => {
         </>}
       </div>}
     {!!saveUrl && <div className={'absolute bg-blue-900 mt-12 w-full p-4 flex flex-col box-border'}>
-      <div className={'text-xl'}>你的副本已准备就绪并可供复制。</div>
-      <div>使用该副本的链接即可返回此页面。</div>
+      <div className={'text-xl'}>你的 xp 镜像已准备就绪并可供复制。</div>
+      <div>使用该链接即可返回此页面，并在以后修改你的结果。记得以后回来看看，也许也会新增一些条目。</div>
       <div className={'flex items-center mt-4'}>
         <FluentButton onClick={() => {
           navigator.clipboard.writeText(saveUrl).then(() => {
@@ -161,7 +167,7 @@ export const MainPage = () => {
             })
           })
         }} icon={<Clipboard3Day24Filled/>}/>
-        <span className={'text-white font-mono ml-4'}>{saveUrl}</span>
+        <span className={'text-white font-mono ml-2'}>{saveUrl}</span>
       </div>
     </div>}
   </div>)
