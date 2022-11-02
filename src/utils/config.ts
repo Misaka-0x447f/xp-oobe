@@ -1,6 +1,6 @@
 export interface Config {
   [protocolVersion: string]: {
-    // how large is one item. range: 1-70
+    // how large is one item. starting at 1 bit.
     bitSize: number
     ratingType: 'xp-star'
     items: string[]

@@ -9,11 +9,11 @@ import { isUndefined } from 'lodash'
 import { TooltipButton } from '../components/TooltipButton'
 import { Progress } from '@fluentui/react-components/unstable'
 import { Button as FluentButton } from '@fluentui/react-components'
-import * as htmlToImage from 'html-to-image'
 import { sleep } from '../utils/lang'
 import { clear, decodeOrLoad, encodeAndSave } from '../utils/interface'
 import { useBeforeMount, useMixedState } from '../utils/hooks'
 import qrcode from '~/assets/qrcode.png'
+import html2canvas from 'html2canvas'
 
 export const MainPage = () => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
@@ -31,8 +31,8 @@ export const MainPage = () => {
       Notification.error({ content: '无法执行截图，因为找不到目标元素。' })
       return
     }
-    const png = await htmlToImage.toPng(el, { backgroundColor: '#242424', style: { width: '120px' } })
-      .finally(() => setLoading(val => val - 1))
+    const canvas = await html2canvas(el).finally(() => setLoading(val => val - 1))
+    const png = canvas.toDataURL('image/png')
     if (!png) {
       Notification.error({ content: '生成截图失败。' })
       return
@@ -139,9 +139,9 @@ export const MainPage = () => {
     {screenShotVisible &&
       <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
         {!screenShotUrl && <>
-          <span className={'text-xl mb-2 text-yellow-500'}>目前截图功能会爆内存，正在优化中</span>
+          <span className={'text-xl mb-2 text-yellow-500'}>目前截图功能可能会爆内存，作者正在优化中 --2022/11/02</span>
           <span className={'text-xl mb-2'}>你可以使用此功能生成结果的截图。</span>
-          <span className={'text-base mb-4'}>注意：为了保持截图生成零成本，截图将在本地生成。由于技术限制，点击下面的生成按钮后网页会<span
+          <span className={'text-base mb-4'}>注意：为了保持截图生成零成本，截图将在本地生成。由于技术限制，目前，点击下面的生成按钮后网页会<span
             className={'text-2xl text-yellow-500'}>无反应 5~30 秒</span>，请耐心等待。
           </span>
           <FluentButton style={{ backgroundColor: 'rgba(239, 68, 68)' }} icon={<FastForward24Filled/>}
@@ -149,13 +149,13 @@ export const MainPage = () => {
         </>}
         {screenShotUrl && <>
           <span>结果截图已经就绪。</span>
-          <span>长按下面的图片（iOS 需要长按<span
+          <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
+             rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
+          <span>如果不能下载，长按下面的图片（iOS 需要长按<span
             className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
           <img className={'max-h-128 object-cover object-left-top my-4'}
                style={{ maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 60%, transparent 100%)' }}
                alt={'result screenshot'} src={screenShotUrl}/>
-          <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
-             rel="noreferrer" download={'xp-oobe.png'}>如果上面的方法没有成功，请点击此处下载...</a>
           <div className={'pt-12'}>
             <FluentButton onClick={() => {
               setScreenShotVisible(false)

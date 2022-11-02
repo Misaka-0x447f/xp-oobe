@@ -3,7 +3,7 @@
 import { config } from './config'
 
 // dot is used for splitter
-export const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~!\'()*-'.split('')
+export const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_*-'.split('')
 export const convertBase = (value: string, fromBase: number, toBase: number) => {
   const fromRange = digits.slice(0, fromBase)
   const toRange = digits.slice(0, toBase)
@@ -30,7 +30,7 @@ export interface Data {
 
 // data should be a string where each single
 // char is a digit, in the sequence of the above digit const:
-// 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~!'()*-
+// 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~'()*-
 export const encodeAndSave = async (data: Data) => {
   const sourceBitSize = config[data.protocolVersion].bitSize
   const dataSequence = config[data.protocolVersion].items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).join('')
