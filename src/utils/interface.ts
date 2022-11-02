@@ -39,9 +39,8 @@ export interface Data {
 // 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~'()*-
 export const encodeAndSave = async (data: Data) => {
   const sourceBitSize = config[data.protocolVersion].bitSize
-  const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).join('')
+  const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).reverse().join('')
   const dataSequences = config[data.protocolVersion].itemsGroup.map(items => mapItems(items))
-  console.log(dataSequences)
   const encoded = `${data.protocolVersion}.${dataSequences.map(dataSequence => convertBase(dataSequence, sourceBitSize, digits.length)).join('.')}`
   localStorage.setItem('data', encoded)
   const url = new URL(window.location.href)
@@ -71,9 +70,15 @@ export const decodeOrLoad = async (): Promise<Data | undefined> => {
   if (!config[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)
   const sourceBitSize = config[protocolVersion].bitSize
   const decodedGroups = itemsGroup.map((items) => convertBase(items, digits.length, sourceBitSize))
+  if (config.v1.itemsGroup.length !== decodedGroups.length) {
+    clear()
+    Notification.error({ content: '检测到数据损坏。正在清空数据...' })
+    setTimeout(() => window.location.reload(), 3000)
+    throw new Error('Invalid data')
+  }
   return {
     protocolVersion,
     // @ts-expect-error
-    items: decodedGroups.map((item, indexInGroup) => Array.from(item).map((digit, indexInString) => [config.v1.itemsGroup[indexInGroup][indexInString], parseInt(convertBase(digit, sourceBitSize, 10))] as const)).flat()
+    items: decodedGroups.map((item, indexInGroup) => Array.from(item).reverse().map((digit, indexInString) => [config.v1.itemsGroup[indexInGroup][indexInString], parseInt(convertBase(digit, sourceBitSize, 10))] as const)).flat()
   }
 }
