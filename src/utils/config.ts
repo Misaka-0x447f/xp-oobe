@@ -3,7 +3,9 @@ export interface Config {
     // how large is one item. starting at 1 bit.
     bitSize: number
     ratingType: 'xp-star'
-    items: string[]
+    // to extend items, add new sections instead
+    // just appending last array to prevent data lost.
+    itemsGroup: string[][]
     sections: Array<{
       displayName: string
       items: string[]
@@ -12,7 +14,7 @@ export interface Config {
   }
 }
 
-const v1Data = {
+const data = {
   sections: [
     {
       displayName: '性偶',
@@ -93,7 +95,7 @@ export const config: Config = {
     bitSize: 12,
     ratingType: 'xp-star',
     // @ts-expect-error
-    items: v1Data.sections.filter(el => el.items).reduce<string[]>((acc, cur) => acc.concat(cur.items), []),
-    ...v1Data
+    itemsGroup: [data.sections.filter(el => el.items).reduce<string[]>((acc, cur) => acc.concat(cur.items), [])],
+    ...data
   }
 }

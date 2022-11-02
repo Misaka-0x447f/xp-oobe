@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   BookCompass24Filled, Clipboard3Day24Filled, Delete28Regular,
-  FastForward24Filled, ImageMultiple28Regular, Save28Regular
+  ImageMultiple28Regular, Save28Regular
 } from '@fluentui/react-icons'
 import { Rating, Notification } from '@douyinfe/semi-ui'
 import { config } from '../utils/config'
@@ -9,11 +9,10 @@ import { isUndefined } from 'lodash'
 import { TooltipButton } from '../components/TooltipButton'
 import { Progress } from '@fluentui/react-components/unstable'
 import { Button as FluentButton } from '@fluentui/react-components'
-import { sleep } from '../utils/lang'
 import { clear, decodeOrLoad, encodeAndSave } from '../utils/interface'
 import { useBeforeMount, useMixedState } from '../utils/hooks'
 import qrcode from '~/assets/qrcode.png'
-import html2canvas from 'html2canvas'
+import { generateShareSheet } from '../utils/shareSheet'
 
 export const MainPage = () => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
@@ -25,13 +24,14 @@ export const MainPage = () => {
 
   const screenshot = async () => {
     setLoading(val => val + 1)
-    await sleep(1000)
-    const el = document.querySelector('#answer-zone') as HTMLElement
-    if (!el) {
-      Notification.error({ content: '无法执行截图，因为找不到目标元素。' })
+    const canvas = await generateShareSheet({
+      protocolVersion: 'v1',
+      items: data
+    }).finally(() => setLoading(val => val - 1))
+    if (!canvas) {
+      Notification.error({ content: '生成截图失败：浏览器支持。' })
       return
     }
-    const canvas = await html2canvas(el).finally(() => setLoading(val => val - 1))
     const png = canvas.toDataURL('image/png')
     if (!png) {
       Notification.error({ content: '生成截图失败。' })
@@ -56,7 +56,7 @@ export const MainPage = () => {
 
   useBeforeMount(async () => {
     const data = await decodeOrLoad()
-    setData(new Map(data?.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? []))
+    setData(new Map(data?.items.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? []))
   })
 
   const getDesc = (item: string) => {
@@ -77,8 +77,12 @@ export const MainPage = () => {
       </TooltipButton>
       {/* <Button theme='borderless' type='tertiary' size={'large'} icon={<ArrowSort28Regular/>}/> */}
       <TooltipButton loading={!!loading} active={screenShotVisible} onClick={() => {
+        if (screenShotVisible) {
+          setScreenShotUrl(null)
+        } else {
+          screenshot()
+        }
         setScreenShotVisible(b => !b)
-        setScreenShotUrl(null)
       }}>
         <ImageMultiple28Regular/>
       </TooltipButton>
@@ -138,17 +142,9 @@ export const MainPage = () => {
     </div>}
     {screenShotVisible &&
       <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
-        {!screenShotUrl && <>
-          <span className={'text-xl mb-2 text-yellow-500'}>目前截图功能可能会爆内存，作者正在优化中 --2022/11/02</span>
-          <span className={'text-xl mb-2'}>你可以使用此功能生成结果的截图。</span>
-          <span className={'text-base mb-4'}>注意：为了保持截图生成零成本，截图将在本地生成。由于技术限制，目前，点击下面的生成按钮后网页会<span
-            className={'text-2xl text-yellow-500'}>无反应 5~30 秒</span>，请耐心等待。
-          </span>
-          <FluentButton style={{ backgroundColor: 'rgba(239, 68, 68)' }} icon={<FastForward24Filled/>}
-                        onClick={screenshot} disabled={!!loading}>生成</FluentButton>
-        </>}
+        {!screenShotUrl && <span className={'text-xl mb-2 text-yellow-500'}>正在生成分享截图，请稍等。</span>}
         {screenShotUrl && <>
-          <span>结果截图已经就绪。</span>
+          <span>分享截图已经就绪。</span>
           <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
              rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
           <span>如果不能下载，长按下面的图片（iOS 需要长按<span

@@ -1,6 +1,7 @@
 // every ASCII char that will not be encoded in URL.
 // DO NOT modify this string since this will break data reading and writing.
 import { config } from './config'
+import { Notification } from '@douyinfe/semi-ui'
 
 // dot is used for splitter
 export const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_*-'.split('')
@@ -10,8 +11,13 @@ export const convertBase = (value: string, fromBase: number, toBase: number) => 
   const bigToBase = BigInt(toBase)
 
   let decValue = value.split('').reverse().reduce((carry, digit, index) => {
-    if (!fromRange.includes(digit)) throw new Error(`Invalid digit ${digit} for base ${fromBase}`)
-    carry += BigInt(fromRange.indexOf(digit)) * BigInt(Math.pow(fromBase, index))
+    if (!fromRange.includes(digit)) {
+      clear()
+      Notification.error({ content: '检测到数据损坏。正在清空数据...' })
+      setTimeout(() => window.location.reload(), 3000)
+      throw new Error(`Invalid digit ${digit} for base ${fromBase}`)
+    }
+    carry += BigInt(fromRange.indexOf(digit)) * (BigInt(fromBase) ** BigInt(index))
     return carry
   }, BigInt(0))
 
@@ -33,8 +39,10 @@ export interface Data {
 // 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~'()*-
 export const encodeAndSave = async (data: Data) => {
   const sourceBitSize = config[data.protocolVersion].bitSize
-  const dataSequence = config[data.protocolVersion].items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).join('')
-  const encoded = `${data.protocolVersion}.${convertBase(dataSequence, sourceBitSize, digits.length)}`
+  const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).join('')
+  const dataSequences = config[data.protocolVersion].itemsGroup.map(items => mapItems(items))
+  console.log(dataSequences)
+  const encoded = `${data.protocolVersion}.${dataSequences.map(dataSequence => convertBase(dataSequence, sourceBitSize, digits.length)).join('.')}`
   localStorage.setItem('data', encoded)
   const url = new URL(window.location.href)
   url.searchParams.set('d', encoded)
@@ -56,12 +64,16 @@ export const clear = () => {
   window.history.pushState({}, '', url.toString())
 }
 
-export const decodeOrLoad = async () => {
+export const decodeOrLoad = async (): Promise<Data | undefined> => {
   const encoded = await read()
   if (!encoded) return undefined
-  const [protocolVersion, items] = encoded.split('.')
+  const [protocolVersion, ...itemsGroup] = encoded.split('.')
   if (!config[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)
   const sourceBitSize = config[protocolVersion].bitSize
-  console.log('out', Array.from(convertBase(items, digits.length, sourceBitSize)))
-  return Array.from(convertBase(items, digits.length, sourceBitSize)).map((digit, index) => [config.v1.items[index], parseInt(convertBase(digit, sourceBitSize, 10))] as const)
+  const decodedGroups = itemsGroup.map((items) => convertBase(items, digits.length, sourceBitSize))
+  return {
+    protocolVersion,
+    // @ts-expect-error
+    items: decodedGroups.map((item, indexInGroup) => Array.from(item).map((digit, indexInString) => [config.v1.itemsGroup[indexInGroup][indexInString], parseInt(convertBase(digit, sourceBitSize, 10))] as const)).flat()
+  }
 }
