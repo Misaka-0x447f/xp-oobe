@@ -92,14 +92,17 @@ export const MainPage = () => {
       </div>}
       {config.v1.sections.map((section) => {
         if ('desc' in section) {
-          return <div key={section.desc} className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.desc}</div>
+          return <div key={section.desc} className={'bg-red-700 h-12 flex items-center w-full px-4 box-border'}>{section.desc}</div>
         }
 
         return <div key={section.displayName}>
           <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.displayName}</div>
           {section.items.map((item) => {
             return <div key={item} className={'flex h-12 px-4 box-border items-center justify-between'}>
-              <span className={'pb-1'}>{item}</span>
+              <div className={'flex flex-col'}>
+                <span className={'pb-1'}>{item}</span>
+                <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[item]}</span>
+              </div>
               {config.v1.ratingType === 'xp-star' &&
                 <div className={'flex items-center justify-center'}>
                   <span className={'opacity-50 pb-1 pr-2'}>{getDesc(item)}</span>
