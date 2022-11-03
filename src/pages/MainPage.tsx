@@ -1,18 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   BookCompass24Filled, Clipboard3Day24Filled, Delete28Regular,
   ImageMultiple28Regular, Save28Regular
 } from '@fluentui/react-icons'
 import { Rating, Notification } from '@douyinfe/semi-ui'
-import { config } from '../utils/config'
-import { isUndefined } from 'lodash'
+import { Config, config, getDesc } from '../utils/config'
 import { TooltipButton } from '../components/TooltipButton'
 import { Progress } from '@fluentui/react-components/unstable'
-import { Button as FluentButton } from '@fluentui/react-components'
+import { Button as FluentButton, Spinner } from '@fluentui/react-components'
 import { clear, decodeOrLoad, encodeAndSave } from '../utils/interface'
 import { useBeforeMount, useMixedState } from '../utils/hooks'
-import qrcode from '~/assets/qrcode.png'
 import { generateShareSheet } from '../utils/shareSheet'
+import { sleep } from '../utils/lang'
+import { isString } from 'lodash'
 
 export const MainPage = () => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
@@ -21,13 +21,39 @@ export const MainPage = () => {
   const [loading, setLoading] = useState(0)
   const [confirmClearVisible, setConfirmClearVisible] = useState(false)
   const [screenShotVisible, setScreenShotVisible] = useState(false)
+  const entries = useMemo(() => {
+    return config.v1.sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
+      if ('items' in cur) {
+        acc.push(cur)
+        acc.push(...cur.items)
+      } else acc.push(cur)
+      return acc
+    }, [])
+  }, [])
+  const [cur, setCur] = useState(100)
+  const step = 10
+  const listContainerRef = React.createRef<HTMLDivElement>()
+
+  useEffect(() => {
+    const onScroll = (e: Event) => {
+      if (!e?.target) return
+      // @ts-expect-error
+      if (e.target.scrollTop > (e.target.scrollHeight - e.target.offsetHeight * 2)) {
+        setCur(cur => Math.min(cur + step, entries.length))
+      }
+    }
+    listContainerRef.current?.addEventListener('scroll', onScroll)
+    return () =>
+      listContainerRef.current?.removeEventListener('scroll', onScroll)
+  }, [])
 
   const screenshot = async () => {
     setLoading(val => val + 1)
+    await sleep(1500)
     const canvas = await generateShareSheet({
       protocolVersion: 'v1',
       items: data
-    }).finally(() => setLoading(val => val - 1))
+    }, (await update()).url.toString()).finally(() => setLoading(val => val - 1))
     if (!canvas) {
       Notification.error({ content: '生成截图失败：浏览器支持。' })
       return
@@ -54,19 +80,11 @@ export const MainPage = () => {
     items: Array.from(dataRef.current.entries()).map(item => [item[0], item[1].book * 6 + item[1].star])
   })
 
-  useBeforeMount(async () => {
-    const data = await decodeOrLoad()
-    setData(new Map(data?.items.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? []))
+  useBeforeMount(() => {
+    decodeOrLoad()
+      .then((data) => setData(new Map(data?.items.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? [])))
   })
 
-  const getDesc = (item: string) => {
-    const value = data.get(item)
-    if (isUndefined(value)) {
-      return '未知'
-    }
-    return [['', '试过'][value.book], ['未知', '绝不', '不喜欢', '一般', '喜欢', '最爱'][value.star]].filter(el => el)
-      .join('，')
-  }
   return (<div className="w-screen h-screen flex flex-col">
     <div className={['h-12 w-full bg-blue-500 flex justify-end items-stretch sticky top-0 z-10',
       '[&>button.semi-button.semi-button-tertiary]:text-white',
@@ -89,41 +107,39 @@ export const MainPage = () => {
       <TooltipButton onClick={async () => await save()} active={!!saveUrl}><Save28Regular/></TooltipButton>
     </div>
     {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
-    <div className={'bg-[#242424]'} id={'answer-zone'}>
-      {!!loading && <div className={'m-2 pt-2 flex items-center'}>
-        <img className={'w-24 h-24'} alt={'website qrcode'} src={qrcode}></img>
-        <span className={'ml-4'}>扫描二维码或访问 xp-oobe.misaka.org，开始制作你的 xp 镜像</span>
-      </div>}
-      {config.v1.sections.map((section) => {
-        if ('desc' in section) {
-          return <div key={section.desc} className={'bg-red-700 h-12 flex items-center w-full px-4 box-border'}>{section.desc}</div>
+    <div className={'bg-[#242424] h-full overflow-scroll'} id={'answer-zone'} ref={listContainerRef}>
+      {entries.slice(0, cur).map((entry, index) => {
+        if (isString(entry)) {
+          return <div key={`${entry}-${index}`} className={'flex h-12 px-4 box-border items-center justify-between'}>
+            <div className={'flex flex-col'}>
+              <span className={'pb-1'}>{entry}</span>
+              <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[entry]}</span>
+            </div>
+            {config.v1.ratingType === 'xp-star' &&
+              <div className={'flex items-center justify-center'}>
+                <span className={'opacity-50 pb-1 pr-2'}>{getDesc(data.get(entry))}</span>
+                <Rating className={'stroke-[rgba(255,255,255,0.2)]'} character={<BookCompass24Filled/>} count={1}
+                        value={data.get(entry)?.book ?? 0} onChange={(num) => {
+                          setData(d => new Map(d.set(entry, { book: num, star: data.get(entry)?.star ?? 0 })))
+                          void update()
+                        }}/>
+                <Rating className={'stroke-[rgba(255,255,255,0.2)]'} allowClear count={5}
+                        value={data.get(entry)?.star ?? 0} onChange={(num) => {
+                          setData(d => new Map(d.set(entry, { book: data.get(entry)?.book ?? 0, star: num })))
+                          void update()
+                        }}/>
+              </div>
+            }
+          </div>
+        }
+        if ('desc' in entry) {
+          return <div key={`${entry.desc}-${index}`}
+                      style={{ backgroundColor: entry.backgroundColor }}
+                      className={'h-12 flex items-center w-full px-4 box-border'}>{entry.desc}</div>
         }
 
-        return <div key={section.displayName}>
-          <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{section.displayName}</div>
-          {section.items.map((item) => {
-            return <div key={item} className={'flex h-12 px-4 box-border items-center justify-between'}>
-              <div className={'flex flex-col'}>
-                <span className={'pb-1'}>{item}</span>
-                <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[item]}</span>
-              </div>
-              {config.v1.ratingType === 'xp-star' &&
-                <div className={'flex items-center justify-center'}>
-                  <span className={'opacity-50 pb-1 pr-2'}>{getDesc(item)}</span>
-                  <Rating className={'stroke-[rgba(255,255,255,0.2)]'} character={<BookCompass24Filled/>} count={1}
-                          value={data.get(item)?.book ?? 0} onChange={(num) => {
-                            setData(d => new Map(d.set(item, { book: num, star: data.get(item)?.star ?? 0 })))
-                            void update()
-                          }}/>
-                  <Rating className={'stroke-[rgba(255,255,255,0.2)]'} allowClear count={5}
-                          value={data.get(item)?.star ?? 0} onChange={(num) => {
-                            setData(d => new Map(d.set(item, { book: data.get(item)?.book ?? 0, star: num })))
-                            void update()
-                          }}/>
-                </div>
-              }
-            </div>
-          })}
+        return <div key={`${entry.displayName}-${index}`}>
+          <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{entry.displayName}</div>
         </div>
       })}
     </div>
@@ -142,9 +158,12 @@ export const MainPage = () => {
     </div>}
     {screenShotVisible &&
       <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
-        {!screenShotUrl && <span className={'text-xl mb-2 text-yellow-500'}>正在生成分享截图，请稍等。</span>}
+        {!screenShotUrl && <div className={'flex'}>
+          <Spinner appearance={'inverted'} size={'small'}/>
+          <span className={'text-lg ml-2'}>正在生成分享海报。这可能需要几秒钟的时间，具体取决于您的计算机配置。</span>
+        </div>}
         {screenShotUrl && <>
-          <span>分享截图已经就绪。</span>
+          <span className={'text-lg'}>分享海报已生成。</span>
           <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
              rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
           <span>如果不能下载，长按下面的图片（iOS 需要长按<span

@@ -1,3 +1,5 @@
+import { isUndefined } from 'lodash'
+
 export interface Config {
   [protocolVersion: string]: {
     // how large is one item. starting at 1 bit.
@@ -9,9 +11,17 @@ export interface Config {
     sections: Array<{
       displayName: string
       items: string[]
-    } | { desc: string }>
+    } | { desc: string, backgroundColor: string }>
     descs?: Record<string, string>
   }
+}
+
+export const getDesc = (p: { book: number, star: number } | undefined) => {
+  if (isUndefined(p)) {
+    return '未知'
+  }
+  return [['', '试过'][p.book], ['未知', '绝不', '不喜欢', '一般', '喜欢', '最爱'][p.star]].filter(el => el)
+    .join('，')
 }
 
 const data = {
@@ -53,7 +63,8 @@ const data = {
       items: ['郊野', '公开', '露出奴役', '露出流放', '露出性爱', '露出爱抚', '露阴(向主人)', '露阴(向陌生人)']
     },
     {
-      desc: '注意：前方进入深水区，可能引起不适'
+      desc: '注意：前方进入深水区，可能引起不适',
+      backgroundColor: '#f80'
     },
     {
       displayName: '精神控制',

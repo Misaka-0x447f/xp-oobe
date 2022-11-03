@@ -11,8 +11,10 @@ export const RouterContext = React.createContext({
 
 const App = () => {
   const [page, setPage] = useState<Pages>('landing')
-  useBeforeMount(async () => {
-    if (await read()) setPage('main')
+  useBeforeMount(() => {
+    (async () => {
+      if (await read()) setPage('main')
+    })()
   })
   return <>
     <RouterContext.Provider value={{ goto: (page) => { setPage(page) } }}>

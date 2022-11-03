@@ -1,10 +1,7 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, EffectCallback, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isFunction } from 'lodash'
 
-export const useBeforeMount = (fn: () => void) =>
-  useEffect(() => {
-    fn()
-  }, [])
+export const useBeforeMount = (fn: EffectCallback) => useEffect(fn, [])
 
 /**
  * @author 447f.misaka@blacklake.cn
