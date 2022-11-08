@@ -42,18 +42,33 @@ export const encodeAndSave = async (data: Data) => {
   const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).reverse().join('')
   const dataSequences = config[data.protocolVersion].itemsGroup.map(items => mapItems(items))
   const encoded = `${data.protocolVersion}.${dataSequences.map(dataSequence => convertBase(dataSequence, sourceBitSize, digits.length)).join('.')}`
-  localStorage.setItem('data', encoded)
-  const url = new URL(window.location.href)
-  url.searchParams.set('d', encoded)
-  window.history.pushState({}, 'title', url.toString())
-  return {
-    url,
-    string: encoded
+  if (encoded.split('.')[1] === '0') {
+    localStorage.removeItem('data')
+    const url = new URL(window.location.href)
+    url.searchParams.delete('d')
+    window.history.replaceState({}, 'title', url.toString())
+    return {
+      url,
+      string: encoded
+    }
+  } else {
+    localStorage.setItem('data', encoded)
+    const url = new URL(window.location.href)
+    url.searchParams.set('d', encoded)
+    window.history.replaceState({}, 'title', url.toString())
+    return {
+      url,
+      string: encoded
+    }
   }
 }
 
-export const read = async () => {
-  return new URLSearchParams(window.location.search).get('d') ?? localStorage.getItem('data')
+export const read = () => {
+  const res = { import: new URLSearchParams(window.location.search).get('d'), local: localStorage.getItem('data') }
+  return {
+    ...res,
+    any: res.import ?? res.local
+  }
 }
 
 export const clear = () => {
@@ -64,7 +79,7 @@ export const clear = () => {
 }
 
 export const decodeOrLoad = async (): Promise<Data | undefined> => {
-  const encoded = await read()
+  const encoded = read().any
   if (!encoded) return undefined
   const [protocolVersion, ...itemsGroup] = encoded.split('.')
   if (!config[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)

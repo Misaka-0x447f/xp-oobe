@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import {
-  BookCompass24Filled, Clipboard3Day24Filled, Delete28Regular,
-  ImageMultiple28Regular, Save28Regular
+  BookCompass24Filled, BookInformation24Regular, Clipboard3Day24Filled,
+  Save28Regular, ShareAndroid24Regular, TagReset24Regular
 } from '@fluentui/react-icons'
 import { Rating, Notification } from '@douyinfe/semi-ui'
 import { Config, config, getDesc } from '../utils/config'
@@ -14,13 +14,14 @@ import { generateShareSheet } from '../utils/shareSheet'
 import { sleep } from '../utils/lang'
 import { isString } from 'lodash'
 
-export const MainPage = () => {
+export const MainPage = (props: { newDocument: boolean }) => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
   const [screenShotUrl, setScreenShotUrl] = useState<string | null>(null)
   const [saveUrl, setSaveUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(0)
   const [confirmClearVisible, setConfirmClearVisible] = useState(false)
   const [screenShotVisible, setScreenShotVisible] = useState(false)
+  const [aboutVisible, setAboutVisible] = useState(false)
   const entries = useMemo(() => {
     return config.v1.sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
       if ('items' in cur) {
@@ -81,17 +82,25 @@ export const MainPage = () => {
   })
 
   useBeforeMount(() => {
-    decodeOrLoad()
-      .then((data) => setData(new Map(data?.items.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? [])))
+    if (!props.newDocument) {
+      decodeOrLoad()
+        .then((data) => setData(new Map(data?.items.map(item => [item[0], { book: Math.floor(item[1] / 6), star: item[1] % 6 }]) ?? [])))
+        .then(update)
+    }
   })
 
   return (<div className="w-screen h-screen flex flex-col">
-    <div className={['h-12 w-full bg-blue-500 flex justify-end items-stretch sticky top-0 z-10',
+    <div className={['w-full bg-blue-500 flex justify-between align-center sticky z-10',
       '[&>button.semi-button.semi-button-tertiary]:text-white',
       '[&>button.semi-button.semi-button-tertiary]:h-full'].join(' ')}>
+      <TooltipButton onClick={() => setAboutVisible(b => !b)}
+                     active={aboutVisible}>
+        <BookInformation24Regular className={'h-6'}/><span>关于</span></TooltipButton>
+      <div className={'flex-1'}></div>
       <TooltipButton onClick={() => setConfirmClearVisible(c => !c)} active={confirmClearVisible}
                      activeTheme={'bg-orange-900'}>
-        <Delete28Regular/>
+        <TagReset24Regular className={'h-6'}/>
+        <span>重置</span>
       </TooltipButton>
       {/* <Button theme='borderless' type='tertiary' size={'large'} icon={<ArrowSort28Regular/>}/> */}
       <TooltipButton loading={!!loading} active={screenShotVisible} onClick={() => {
@@ -102,11 +111,12 @@ export const MainPage = () => {
         }
         setScreenShotVisible(b => !b)
       }}>
-        <ImageMultiple28Regular/>
+        <ShareAndroid24Regular className={'h-6'}/>
+        <span>截图</span>
       </TooltipButton>
-      <TooltipButton onClick={async () => await save()} active={!!saveUrl}><Save28Regular/></TooltipButton>
+      <TooltipButton onClick={async () => await save()}
+                     active={!!saveUrl}><Save28Regular className={'h-6'}/><span>保存</span></TooltipButton>
     </div>
-    {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
     <div className={'bg-[#242424] h-full overflow-scroll'} id={'answer-zone'} ref={listContainerRef}>
       {entries.slice(0, cur).map((entry, index) => {
         if (isString(entry)) {
@@ -143,55 +153,75 @@ export const MainPage = () => {
         </div>
       })}
     </div>
-    {confirmClearVisible && <div className={'absolute bg-orange-900 mt-12 w-full p-4 flex flex-col box-border'}>
-      <span className={'text-xl'}>确实要清空内容吗？</span>
-      <div className={'flex mt-2'}>
-        <FluentButton className={'mr-2'} style={{ backgroundColor: 'rgba(239, 68, 68)' }} icon={<Delete28Regular/>}
-                      onClick={() => {
-                        setData(new Map())
-                        clear()
-                        setConfirmClearVisible(false)
-                      }}>清空</FluentButton>
-        <div className={'w-2'}></div>
-        <FluentButton onClick={() => setConfirmClearVisible(false)}>取消</FluentButton>
-      </div>
-    </div>}
-    {screenShotVisible &&
-      <div className={'absolute bg-blue-900 mt-12 w-full min-h-[calc(100vh-3rem)] p-4 flex flex-col box-border'}>
-        {!screenShotUrl && <div className={'flex'}>
-          <Spinner appearance={'inverted'} size={'small'}/>
-          <span className={'text-lg ml-2'}>正在生成分享海报。这可能需要几秒钟的时间，具体取决于您的计算机配置。</span>
-        </div>}
-        {screenShotUrl && <>
-          <span className={'text-lg'}>分享海报已生成。</span>
-          <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
-             rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
-          <span>如果不能下载，长按下面的图片（iOS 需要长按<span
-            className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
-          <img className={'max-h-128 object-cover object-left-top my-4'}
-               style={{ maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 60%, transparent 100%)' }}
-               alt={'result screenshot'} src={screenShotUrl}/>
-          <div className={'pt-12'}>
-            <FluentButton onClick={() => {
-              setScreenShotVisible(false)
-              setScreenShotUrl(null)
-            }}>完成</FluentButton>
-          </div>
-        </>}
+    <div className={'absolute mt-16 w-full box-border top-0'}>
+      {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
+      {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
+        <div className={'text-xl'}>关于</div>
+        <div>当前阶段开发目标(2022/11/09 更新)</div>
+        <div className={'ml-6'}>
+          <li>自定义 xp 及打分（也许不能保存）</li>
+          <li>排序功能（按星级排序、按特定类别排序、按体验过排序）</li>
+          <li>添加马里亚纳海沟区</li>
+          <li>pc 长项目</li>
+          <li>手机长项目排版问题</li>
+        </div>
+        <div>作者：Misaka17535</div>
+        <div>测试：fuzhu</div>
+        <div>项目地址/bug 反馈：
+          <a href={'https://github.com/Misaka-0x447f/xp-oobe'} target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
+        </div>
+        <div>用户意见群：<a href={'https://t.me/+jzo6ZFZ8365kNDc9'} target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
       </div>}
-    {!!saveUrl && <div className={'absolute bg-blue-900 mt-12 w-full p-4 flex flex-col box-border'}>
-      <div className={'text-xl'}>你的 xp 镜像已准备就绪并可供复制。</div>
-      <div>使用该链接即可返回此页面，并在以后修改你的结果。记得以后回来看看，也许也会新增一些条目。</div>
-      <div className={'flex items-center mt-4'}>
-        <FluentButton onClick={() => {
-          navigator.clipboard.writeText(saveUrl).then(() => {
-            Notification.open({
-              content: '已经复制到剪贴板。'
+      {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
+        <span className={'text-xl'}>确实要重置表单吗？</span>
+        <div className={'flex mt-2'}>
+          <FluentButton className={'mr-2'} style={{ backgroundColor: 'rgba(239, 68, 68)' }} icon={<TagReset24Regular/>}
+                        onClick={() => {
+                          setData(new Map())
+                          clear()
+                          setConfirmClearVisible(false)
+                        }}>重置</FluentButton>
+          <div className={'w-2'}></div>
+          <FluentButton onClick={() => setConfirmClearVisible(false)}>取消</FluentButton>
+        </div>
+      </div>}
+      {screenShotVisible &&
+        <div className={'bg-blue-900 min-h-[calc(100vh-3rem)] p-4 flex flex-col'}>
+          {!screenShotUrl && <div className={'flex'}>
+            <Spinner appearance={'inverted'} size={'small'}/>
+            <span className={'text-lg ml-2'}>正在生成分享海报。这可能需要几秒钟的时间，具体取决于您的计算机配置。</span>
+          </div>}
+          {screenShotUrl && <>
+            <span className={'text-lg'}>分享海报已生成。</span>
+            <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
+               rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
+            <span>如果不能下载，长按下面的图片（iOS 需要长按<span
+              className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
+            <img className={'max-h-128 object-cover object-left-top my-4'}
+                 style={{ maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 60%, transparent 100%)' }}
+                 alt={'result screenshot'} src={screenShotUrl}/>
+            <div className={'pt-12'}>
+              <FluentButton onClick={() => {
+                setScreenShotVisible(false)
+                setScreenShotUrl(null)
+              }}>完成</FluentButton>
+            </div>
+          </>}
+        </div>}
+      {!!saveUrl && <div className={'bg-blue-900 p-4 flex flex-col'}>
+        <div className={'text-xl'}>你的 xp 镜像已准备就绪并可供复制。</div>
+        <div>使用该链接即可返回此页面，并在以后修改你的结果。记得以后回来看看，也许也会新增一些条目。</div>
+        <div className={'flex items-center mt-4'}>
+          <FluentButton onClick={() => {
+            navigator.clipboard.writeText(saveUrl).then(() => {
+              Notification.open({
+                content: '已经复制到剪贴板。'
+              })
             })
-          })
-        }} icon={<Clipboard3Day24Filled/>}/>
-        <span className={'text-white font-mono ml-2'}>{saveUrl}</span>
-      </div>
-    </div>}
+          }} icon={<Clipboard3Day24Filled/>}/>
+          <span className={'text-white font-mono ml-2'}>{saveUrl}</span>
+        </div>
+      </div>}
+    </div>
   </div>)
 }
