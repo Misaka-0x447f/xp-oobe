@@ -168,9 +168,9 @@ export const MainPage = (props: { newDocument: boolean }) => {
         <div>作者：Misaka17535</div>
         <div>测试：fuzhu</div>
         <div>项目地址/bug 反馈：
-          <a href={'https://github.com/Misaka-0x447f/xp-oobe'} target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
+          <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'} target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
         </div>
-        <div>用户意见群：<a href={'https://t.me/+jzo6ZFZ8365kNDc9'} target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
+        <div>用户意见群：<a className={'text-orange-200 decoration-solid'} href={'https://t.me/+jzo6ZFZ8365kNDc9'} target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实要重置表单吗？</span>
