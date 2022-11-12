@@ -85,7 +85,7 @@ export const decodeOrLoad = async (): Promise<Data | undefined> => {
   if (!config[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)
   const sourceBitSize = config[protocolVersion].bitSize
   const decodedGroups = itemsGroup.map((items) => convertBase(items, digits.length, sourceBitSize))
-  if (config.v1.itemsGroup.length !== decodedGroups.length) {
+  if (config.v1.itemsGroup.length < decodedGroups.length) {
     clear()
     Notification.error({ content: '检测到数据损坏。正在清空数据...' })
     setTimeout(() => window.location.reload(), 3000)
