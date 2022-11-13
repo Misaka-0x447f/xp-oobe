@@ -116,7 +116,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
-        <div>当前阶段开发目标(2022/11/09 更新)</div>
+        <div>当前阶段开发目标(2022/11/14 更新)</div>
         <div className={'ml-6'}>
           <li>自定义 xp 及打分（也许不能保存）</li>
           <li>按多个维度排序的功能（先按类别，再按星级）</li>
