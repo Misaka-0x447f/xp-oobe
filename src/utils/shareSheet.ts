@@ -4,6 +4,7 @@ import emptyStarSrc from '~/assets/empty-star.svg'
 import fillBookSrc from '~/assets/fill-book.svg'
 import fillStarSrc from '~/assets/fill-star.svg'
 import * as QRCode from 'qrcode'
+import { rule, sort } from './sort'
 
 export interface ShareSheetData {
   protocolVersion: 'v1'
@@ -35,15 +36,15 @@ const fillText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   ctx.fillText(text, x, y)
 }
 
-export const generateShareSheet = async (data: ShareSheetData, url: string) => {
+export const generateShareSheet = async (data: ShareSheetData, url: string, sortRule: keyof typeof rule) => {
   const canvas = document.createElement('canvas')
-  const items = config[data.protocolVersion].sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
+  const items = sort(config[data.protocolVersion].sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
     if ('items' in cur) {
       acc.push(cur)
       acc.push(...cur.items)
     } else acc.push(cur)
     return acc
-  }, [])
+  }, []), rule[sortRule], data.items)
   const columnCount = 4
   const columnWidth = 800
   const columnGap = 24

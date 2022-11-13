@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
-  BookCompass24Filled, BookInformation24Regular, Clipboard3Day24Filled,
-  Save28Regular, ShareAndroid24Regular, TagReset24Regular
+  BookCompass24Filled, BookInformation24Regular, ChevronCircleDown24Regular, Clipboard3Day24Filled,
+  Save28Regular, ShareAndroid24Regular, TagReset24Regular, TextSortAscending24Regular
 } from '@fluentui/react-icons'
-import { Rating, Notification } from '@douyinfe/semi-ui'
+import { Rating, Notification, Select } from '@douyinfe/semi-ui'
 import { Config, config, getDesc } from '../utils/config'
 import { TooltipButton } from '../components/TooltipButton'
 import { Progress } from '@fluentui/react-components/unstable'
@@ -13,6 +13,10 @@ import { useBeforeMount, useMixedState } from '../utils/hooks'
 import { generateShareSheet } from '../utils/shareSheet'
 import { sleep } from '../utils/lang'
 import { isString } from 'lodash'
+import { rule, sort } from '../utils/sort'
+import { FixedSizeList as VirtualizedList } from 'react-window'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import { remToPx } from '../utils/dom'
 
 export const MainPage = (props: { newDocument: boolean }) => {
   const [data, setData, dataRef] = useMixedState<Map<string, { book: number, star: number }>>(new Map())
@@ -21,32 +25,18 @@ export const MainPage = (props: { newDocument: boolean }) => {
   const [loading, setLoading] = useState(0)
   const [confirmClearVisible, setConfirmClearVisible] = useState(false)
   const [screenShotVisible, setScreenShotVisible] = useState(false)
+  const [sortVisible, setSortVisible] = useState(false)
+  const [sortRule, setSortRule] = useState<keyof typeof rule>('按类别(默认顺序)')
   const [aboutVisible, setAboutVisible] = useState(false)
   const entries = useMemo(() => {
-    return config.v1.sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
+    return sort(config.v1.sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
       if ('items' in cur) {
         acc.push(cur)
         acc.push(...cur.items)
       } else acc.push(cur)
       return acc
-    }, [])
-  }, [])
-  const [cur, setCur] = useState(100)
-  const step = 10
-  const listContainerRef = React.createRef<HTMLDivElement>()
-
-  useEffect(() => {
-    const onScroll = (e: Event) => {
-      if (!e?.target) return
-      // @ts-expect-error
-      if (e.target.scrollTop > (e.target.scrollHeight - e.target.offsetHeight * 2)) {
-        setCur(cur => Math.min(cur + step, entries.length))
-      }
-    }
-    listContainerRef.current?.addEventListener('scroll', onScroll)
-    return () =>
-      listContainerRef.current?.removeEventListener('scroll', onScroll)
-  }, [])
+    }, []), rule[sortRule], data)
+  }, [data, sortRule])
 
   const screenshot = async () => {
     setLoading(val => val + 1)
@@ -54,7 +44,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
     const canvas = await generateShareSheet({
       protocolVersion: 'v1',
       items: data
-    }, (await update()).url.toString()).finally(() => setLoading(val => val - 1))
+    }, (await update()).url.toString(), sortRule).finally(() => setLoading(val => val - 1))
     if (!canvas) {
       Notification.error({ content: '生成截图失败：浏览器支持。' })
       return
@@ -81,6 +71,8 @@ export const MainPage = (props: { newDocument: boolean }) => {
     items: Array.from(dataRef.current.entries()).map(item => [item[0], item[1].book * 6 + item[1].star])
   })
 
+  const sortOptions = useMemo(() => Object.keys(rule).map(key => ({ label: key, value: key })), [])
+
   useBeforeMount(() => {
     if (!props.newDocument) {
       decodeOrLoad()
@@ -90,19 +82,22 @@ export const MainPage = (props: { newDocument: boolean }) => {
   })
 
   return (<div className="w-screen h-screen flex flex-col">
-    <div className={['w-full bg-blue-500 flex justify-between align-center sticky z-10',
+    <div className={['w-full bg-blue-500 flex justify-between align-center sticky box-border pl-1.3 pr-3',
       '[&>button.semi-button.semi-button-tertiary]:text-white',
       '[&>button.semi-button.semi-button-tertiary]:h-full'].join(' ')}>
       <TooltipButton onClick={() => setAboutVisible(b => !b)}
                      active={aboutVisible}>
         <BookInformation24Regular className={'h-6'}/><span>关于</span></TooltipButton>
       <div className={'flex-1'}></div>
-      <TooltipButton onClick={() => setConfirmClearVisible(c => !c)} active={confirmClearVisible}
+      <TooltipButton onClick={() => setConfirmClearVisible(b => !b)} active={confirmClearVisible}
                      activeTheme={'bg-orange-900'}>
         <TagReset24Regular className={'h-6'}/>
         <span>重置</span>
       </TooltipButton>
-      {/* <Button theme='borderless' type='tertiary' size={'large'} icon={<ArrowSort28Regular/>}/> */}
+      <TooltipButton onClick={() => setSortVisible(b => !b)} active={sortVisible}>
+        <TextSortAscending24Regular/>
+        <span>排序</span>
+      </TooltipButton>
       <TooltipButton loading={!!loading} active={screenShotVisible} onClick={() => {
         if (screenShotVisible) {
           setScreenShotUrl(null)
@@ -117,60 +112,27 @@ export const MainPage = (props: { newDocument: boolean }) => {
       <TooltipButton onClick={async () => await save()}
                      active={!!saveUrl}><Save28Regular className={'h-6'}/><span>保存</span></TooltipButton>
     </div>
-    <div className={'bg-[#242424] h-full overflow-scroll'} id={'answer-zone'} ref={listContainerRef}>
-      {entries.slice(0, cur).map((entry, index) => {
-        if (isString(entry)) {
-          return <div key={`${entry}-${index}`} className={'flex h-12 px-4 box-border items-center justify-between'}>
-            <div className={'flex flex-col'}>
-              <span className={'pb-1'}>{entry}</span>
-              <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[entry]}</span>
-            </div>
-            {config.v1.ratingType === 'xp-star' &&
-              <div className={'flex items-center justify-center'}>
-                <span className={'opacity-50 pb-1 pr-2'}>{getDesc(data.get(entry))}</span>
-                <Rating className={'stroke-[rgba(255,255,255,0.2)]'} character={<BookCompass24Filled/>} count={1}
-                        value={data.get(entry)?.book ?? 0} onChange={(num) => {
-                          setData(d => new Map(d.set(entry, { book: num, star: data.get(entry)?.star ?? 0 })))
-                          void update()
-                        }}/>
-                <Rating className={'stroke-[rgba(255,255,255,0.2)]'} allowClear count={5}
-                        value={data.get(entry)?.star ?? 0} onChange={(num) => {
-                          setData(d => new Map(d.set(entry, { book: data.get(entry)?.book ?? 0, star: num })))
-                          void update()
-                        }}/>
-              </div>
-            }
-          </div>
-        }
-        if ('desc' in entry) {
-          return <div key={`${entry.desc}-${index}`}
-                      style={{ backgroundColor: entry.backgroundColor }}
-                      className={'h-12 flex items-center w-full px-4 box-border'}>{entry.desc}</div>
-        }
-
-        return <div key={`${entry.displayName}-${index}`}>
-          <div className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{entry.displayName}</div>
-        </div>
-      })}
-    </div>
-    <div className={'absolute mt-16 w-full box-border top-0'}>
+    <div className={'w-full box-border'}>
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
         <div>当前阶段开发目标(2022/11/09 更新)</div>
         <div className={'ml-6'}>
           <li>自定义 xp 及打分（也许不能保存）</li>
-          <li>排序功能（按星级排序、按特定类别排序、按体验过排序）</li>
+          <li>按多个维度排序的功能（先按类别，再按星级）</li>
           <li>添加马里亚纳海沟区</li>
           <li>pc 长项目</li>
           <li>手机长项目排版问题</li>
+          <li>分享海报二维码尺寸问题</li>
         </div>
         <div>作者：Misaka17535</div>
         <div>测试：fuzhu</div>
         <div>项目地址/bug 反馈：
-          <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'} target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
+          <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'}
+             target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
         </div>
-        <div>用户意见群：<a className={'text-orange-200 decoration-solid'} href={'https://t.me/+jzo6ZFZ8365kNDc9'} target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
+        <div>用户意见群：<a className={'text-orange-200 decoration-solid'} href={'https://t.me/+jzo6ZFZ8365kNDc9'}
+                           target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实要重置表单吗？</span>
@@ -185,6 +147,20 @@ export const MainPage = (props: { newDocument: boolean }) => {
           <FluentButton onClick={() => setConfirmClearVisible(false)}>取消</FluentButton>
         </div>
       </div>}
+      {sortVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
+        <div className={'flex items-center justify-between'}>
+          <Select optionList={sortOptions} insetLabel='排序方式' value={sortRule}
+                  onChange={(v) => setSortRule(v as string)} triggerRender={() =>
+            <div className={'truncate flex items-center cursor-pointer'}>
+              <span className={'text-lg mr-4'}>{sortRule}</span>
+              <ChevronCircleDown24Regular/>
+            </div>
+          }/>
+          <FluentButton appearance={'primary'} onClick={() => {
+            setSortVisible(false)
+          }}>完成</FluentButton>
+        </div>
+      </div>}
       {screenShotVisible &&
         <div className={'bg-blue-900 min-h-[calc(100vh-3rem)] p-4 flex flex-col'}>
           {!screenShotUrl && <div className={'flex'}>
@@ -192,20 +168,24 @@ export const MainPage = (props: { newDocument: boolean }) => {
             <span className={'text-lg ml-2'}>正在生成分享海报。这可能需要几秒钟的时间，具体取决于您的计算机配置。</span>
           </div>}
           {screenShotUrl && <>
-            <span className={'text-lg'}>分享海报已生成。</span>
-            <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
-               rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
-            <span>如果不能下载，长按下面的图片（iOS 需要长按<span
-              className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
-            <img className={'max-h-128 object-cover object-left-top my-4'}
+            <div className={'flex justify-between'}>
+              <div className={'flex flex-col'}>
+                <span className={'text-lg'}>分享海报已生成。</span>
+                <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
+                   rel="noreferrer" download={'xp-oobe.png'}>点击此处下载。</a>
+                <span>如果不能下载，长按下面的图片（iOS 需要长按<span
+                  className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
+              </div>
+              <div>
+                <FluentButton appearance={'primary'} onClick={() => {
+                  setScreenShotVisible(false)
+                  setScreenShotUrl(null)
+                }}>完成</FluentButton>
+              </div>
+            </div>
+            <img className={'max-h-[60vh] object-cover object-left-top my-4'}
                  style={{ maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 60%, transparent 100%)' }}
                  alt={'result screenshot'} src={screenShotUrl}/>
-            <div className={'pt-12'}>
-              <FluentButton onClick={() => {
-                setScreenShotVisible(false)
-                setScreenShotUrl(null)
-              }}>完成</FluentButton>
-            </div>
           </>}
         </div>}
       {!!saveUrl && <div className={'bg-blue-900 p-4 flex flex-col'}>
@@ -222,6 +202,55 @@ export const MainPage = (props: { newDocument: boolean }) => {
           <span className={'text-white font-mono ml-2'}>{saveUrl}</span>
         </div>
       </div>}
+    </div>
+    <div className={'flex-1 bg-[#242424] h-full'} id={'answer-zone'}>
+      <AutoSizer>
+        {(sizeInfo) =>
+          <VirtualizedList {...sizeInfo} itemCount={entries.length} itemSize={remToPx(12 / 4)}>
+            {({ index, style }) => {
+              const entry = entries[index]
+              return <div style={style}>
+                {(() => {
+                  if (isString(entry)) {
+                    return <div key={`${entry}-${index}`}
+                                className={'flex h-12 px-4 box-border items-center justify-between'}>
+                      <div className={'flex flex-col'}>
+                        <span className={'pb-1'}>{entry}</span>
+                        <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[entry]}</span>
+                      </div>
+                      {config.v1.ratingType === 'xp-star' &&
+                        <div className={'flex items-center justify-center'}>
+                          <span className={'opacity-50 pb-1 pr-2'}>{getDesc(data.get(entry))}</span>
+                          <Rating className={'stroke-[rgba(255,255,255,0.2)]'} character={<BookCompass24Filled/>}
+                                  count={1}
+                                  value={data.get(entry)?.book ?? 0} onChange={(num) => {
+                                    setData(d => new Map(d.set(entry, { book: num, star: data.get(entry)?.star ?? 0 })))
+                                    void update()
+                                  }}/>
+                          <Rating className={'stroke-[rgba(255,255,255,0.2)]'} allowClear count={5}
+                                  value={data.get(entry)?.star ?? 0} onChange={(num) => {
+                                    setData(d => new Map(d.set(entry, { book: data.get(entry)?.book ?? 0, star: num })))
+                                    void update()
+                                  }}/>
+                        </div>
+                      }
+                    </div>
+                  }
+                  if ('desc' in entry) {
+                    return <div key={`${entry.desc}-${index}`}
+                                style={{ backgroundColor: entry.backgroundColor }}
+                                className={'h-12 flex items-center w-full px-4 box-border'}>{entry.desc}</div>
+                  }
+                  return <div key={`${entry.displayName}-${index}`}>
+                    <div
+                      className={'bg-blue-700 h-12 flex items-center w-full px-4 box-border'}>{entry.displayName}</div>
+                  </div>
+                })()}
+              </div>
+            }}
+          </VirtualizedList>
+        }
+      </AutoSizer>
     </div>
   </div>)
 }
