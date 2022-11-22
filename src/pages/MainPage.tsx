@@ -116,6 +116,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
+        <div>tips: 本站域名有 xp-oobe.misaka.org 和 xp.misaka.org 两个，但出于浏览器限制以及太懒了不想做的原因，这两个站数据不在你的本地设备上互通，请人工迁移数据，具体方法就是点保存，把域名改了，再导入。</div>
         <div>当前阶段开发目标(2022/11/22 更新)</div>
         <div className={'ml-6'}>
           <li>自定义 xp 及打分（也许不能保存）</li>
