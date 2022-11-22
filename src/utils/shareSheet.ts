@@ -81,6 +81,8 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
     const x = column * columnWidth + column * columnGap
     const y = bannerHeight + row * lineHeight
     if (typeof item === 'string') {
+      ctx.fillStyle = index % 2 === 0 ? '#303030' : '#242424'
+      ctx.fillRect(x, y, columnWidth, lineHeight)
       ctx.font = getFont(24)
       ctx.fillStyle = '#fff'
       fillText(ctx, item, x + contentPaddingLeft, y + lineHeight / 2)

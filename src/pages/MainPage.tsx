@@ -116,7 +116,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
-        <div>当前阶段开发目标(2022/11/14 更新)</div>
+        <div>当前阶段开发目标(2022/11/22 更新)</div>
         <div className={'ml-6'}>
           <li>自定义 xp 及打分（也许不能保存）</li>
           <li>按多个维度排序的功能（先按类别，再按星级）</li>
@@ -125,14 +125,16 @@ export const MainPage = (props: { newDocument: boolean }) => {
           <li>手机长项目排版问题</li>
           <li>分享海报二维码尺寸问题</li>
         </div>
-        <div>作者：Misaka17535</div>
+        <div>作者：御坂云见#17535 <a href={'https://twitter.com/MisakaKumomi'}>[twitter]</a></div>
         <div>测试：fuzhu</div>
         <div>项目地址/bug 反馈：
           <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'}
              target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
         </div>
-        <div>用户意见群：<a className={'text-orange-200 decoration-solid'} href={'https://t.me/+jzo6ZFZ8365kNDc9'}
-                           target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
+        <div>用户意见群（全球）：<a className={'text-orange-200 decoration-solid'} href={'https://t.me/+jzo6ZFZ8365kNDc9'}
+                                 target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
+        <div className={'flex items-center'}>用户意见群（中国大陆）：<a target={'_blank'} href={'https://jq.qq.com/?_wv=1027&k=iqKi6zeR'} rel="noreferrer"><img
+          src={'http://pub.idqqimg.com/wpa/images/group.png'} alt={'xp-oobe-join-group'} title={'xp-oobe'}/></a>483446768</div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实要重置表单吗？</span>
@@ -213,7 +215,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
                 {(() => {
                   if (isString(entry)) {
                     return <div key={`${entry}-${index}`}
-                                className={'flex h-12 px-4 box-border items-center justify-between'}>
+                                className={['flex h-12 px-4 box-border items-center justify-between', index % 2 === 0 && 'bg-[#303030]'].join(' ')}>
                       <div className={'flex flex-col'}>
                         <span className={'pb-1'}>{entry}</span>
                         <span className={'mt-[-0.25rem] pr-4 text-gray-400 text-xs'}>{config.v1.descs?.[entry]}</span>
