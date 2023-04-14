@@ -1,4 +1,33 @@
-import { isUndefined } from 'lodash'
+import { difference, isUndefined } from 'lodash'
+import type { XpStar } from '../components/RatingXpStar'
+import { Notification } from '@douyinfe/semi-ui'
+
+export interface GroupEntry {
+  displayName: string
+  items: string[]
+}
+
+export interface DescEntry {
+  desc: string
+  backgroundColor: string
+  sortBehavior: 'top' | 'hidden'
+  shareBehavior?: 'hidden'
+}
+
+export interface CustomZoneEntry {
+  customZone: true
+  sortBehavior: 'top' | 'hidden'
+}
+
+export interface PlainItem {
+  label: string
+  group: string
+}
+
+export const isPlainItem = (data: PlainItem | CustomZoneEntry | DescEntry | GroupEntry): data is PlainItem => 'label' in data
+export const isGroupEntry = (data: PlainItem | CustomZoneEntry | DescEntry | GroupEntry): data is GroupEntry => 'items' in data
+export const isDescEntry = (data: PlainItem | CustomZoneEntry | DescEntry | GroupEntry): data is DescEntry => 'desc' in data
+export const isCustomZoneEntry = (data: PlainItem | CustomZoneEntry | DescEntry | GroupEntry): data is CustomZoneEntry => 'customZone' in data
 
 export interface Config {
   [protocolVersion: string]: {
@@ -8,15 +37,12 @@ export interface Config {
     // to extend items, add new sections instead
     // just appending last array to prevent data lost.
     itemsGroup: string[][]
-    sections: Array<{
-      displayName: string
-      items: string[]
-    } | { desc: string, backgroundColor: string }>
+    sections: Array<GroupEntry | DescEntry | CustomZoneEntry>
     descs?: Record<string, string>
   }
 }
 
-export const getDesc = (p: { book: number, star: number } | undefined) => {
+export const getDesc = (p: XpStar | undefined) => {
   if (isUndefined(p)) {
     return '未知'
   }
@@ -38,14 +64,18 @@ const data = {
     ['脏话侮辱', '语言侮辱', '人格侮辱', '思维控制', '视觉控制', '网络控制', '语言管教', '网络公调', '视频表演', '观看成人电影'],
     ['昆虫', '兽交', '兽交(多个)', '人兽同交', '兽虐'],
     ['灌肠(惩罚目的)', '精液', '“圣水”', '“黄金”', '“圣水”浴', '厕后舔肛', '排便', '放尿']
-  ].reduce((acc, cur) => acc.concat(cur), []),
-  // extend before publish
-  ['视觉控制(隐蔽)', '视觉控制(明显)', '排泄控制']
+  ].flat(),
+  // extended before publish
+  ['视觉控制(隐蔽)', '视觉控制(明显)', '排泄控制'],
+  // extended at 2023-04-10
+  ['限制氧气', '限制颈部血液流动']
   ],
   sections: [
     {
-      desc: '提醒：每一项都不是必填，不填也可代表拒绝回答。',
-      backgroundColor: '#333'
+      desc: '提醒：每一项都不是必填，不填也可代表拒绝回答。本站无后端，所有数据保存在本地，请记得按保存，我们无法帮你找回。',
+      backgroundColor: '#333',
+      sortBehavior: 'top',
+      shareBehavior: 'hidden'
     },
     {
       displayName: '性偶',
@@ -69,7 +99,7 @@ const data = {
     },
     {
       displayName: '玩法/道具',
-      items: ['SP(轻度)', 'SP(中度)', 'SP(重度)', '掌掴(无痕迹)', '掌掴(有痕迹)', '口球', '衣物堵嘴', '充气口球', '阴茎/条形口塞', '胶条封嘴', '拉扯头发', '皮带', '藤条', '木棒', '戒尺', '散鞭', '马鞭', '蛇鞭', '毛刷', '手心', '脚心', '其他搔痒', '腹部拳击', '其他拳击', '咬', '虐待性器官', '器具吸乳', '乳夹', '乳夹(承重)', '阴夹', '滴蜡', '电击按摩', '冰块', '冰块插入', '木马', '走绳结']
+      items: ['SP(轻度)', 'SP(中度)', 'SP(重度)', '掌掴(无痕迹)', '掌掴(有痕迹)', '口球', '衣物堵嘴', '充气口球', '阴茎/条形口塞', '胶条封嘴', '拉扯头发', '皮带', '藤条', '木棒', '戒尺', '散鞭', '马鞭', '蛇鞭', '毛刷', '手心', '脚心', '其他搔痒', '腹部拳击', '其他拳击', '咬', '虐待性器官', '器具吸乳', '乳夹', '乳夹(承重)', '阴夹', '滴蜡', '电击按摩', '冰块', '冰块插入', '木马', '走绳结', '限制氧气', '限制颈部血液流动']
     },
     {
       displayName: '身体控制',
@@ -85,7 +115,8 @@ const data = {
     },
     {
       desc: '注意：前方进入深水区，可能引起不适',
-      backgroundColor: '#f80'
+      backgroundColor: '#f80',
+      sortBehavior: 'hidden'
     },
     {
       displayName: '精神控制',
@@ -99,34 +130,67 @@ const data = {
       displayName: '代谢',
       items: ['灌肠(惩罚目的)', '排泄控制', '精液', '“圣水”', '“黄金”', '“圣水”浴', '厕后舔肛', '排便', '放尿']
     }
-  ],
+  ] as Config[string]['sections'],
   descs: {
     k8: '猫化',
     k9: '犬化',
-    公开绳缚: '例如聚会',
+    公开绳缚表演: '例如聚会',
     正太: '仅限幻想作品',
     幼女: '仅限幻想作品',
     同性: '以性别认同为准',
     异性: '以性别认同为准',
-    烹饪: '别当真，这部分很多词是 AI 自动补全的。',
+    烹饪: '别当真，很多词是 AI 自动补全的。',
     婴儿: 'ABDL',
     露出性爱: '建议遵守法律法规和公序良俗。',
     强制服药: '仅信任',
-    '佩戴饰品(隐蔽)': '例如小徽章、不明显的手环/项链/项圈',
-    '佩戴饰品(明显)': '例如有明显铭牌的项圈',
+    '佩戴饰品(隐蔽)': '小徽章/手环/项链/项圈',
+    '佩戴饰品(明显)': '有明显铭牌的项圈等',
     'SP(轻度)': '当天或次日无痕迹',
     'SP(中度)': '痕迹持续半周',
     'SP(重度)': '痕迹持续一到三周',
-    电击按摩: '警告：请遵守电击器使用规范，否则可能导致死亡。',
-    冰块插入: '警告：视程度可能导致死亡。',
-    '视觉控制(隐蔽)': '隐形眼镜(可能损伤视力)/不透光墨镜'
+    电击按摩: '请遵守电击器使用规范，否则可能导致死亡',
+    冰块插入: '视体质可能导致死亡',
+    '视觉控制(隐蔽)': '隐形眼镜/不透光墨镜'
   }
 }
 
-export const config: Config = {
+export const configs: Config = {
   v1: {
     bitSize: 12,
     ratingType: 'xp-star',
     ...data
+  }
+}
+
+// validate
+for (const config of Object.values(configs)) {
+  let errorFlag = false
+  const { sections, descs, itemsGroup } = config
+  let sectionsItem: string[] = []
+  for (const section of sections) {
+    if ('items' in section) {
+      sectionsItem = sectionsItem.concat(section.items)
+    }
+  }
+  const itemsGroupItem: string[] = itemsGroup.flat()
+  if (difference(sectionsItem, itemsGroupItem).length > 0) {
+    console.error(`[Config validator] difference(sectionsItem, itemsGroupItem) should be [], got [${difference(sectionsItem, itemsGroupItem).join(',')}]`)
+    errorFlag = true
+  }
+  const descsError: string[] = []
+  for (const key of Object.keys(descs ?? {})) {
+    if (!sectionsItem.includes(key)) {
+      descsError.push(key)
+    }
+  }
+  if (descsError.length) {
+    console.error(`[Config validator] the following descs keys is not in sectionsItem: [${descsError.join(',')}]`)
+    errorFlag = true
+  }
+  if (errorFlag) {
+    Notification.error({
+      duration: 0,
+      content: '配置文件无效，需要开发人员处理。请在控制台查看错误信息。'
+    })
   }
 }

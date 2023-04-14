@@ -17,6 +17,7 @@ export const LandingPage = () => {
   return <div className="w-screen h-screen flex items-center">
     <div className={'m-8'}>
       <div className={'text-3xl font-mono'}>Project xp-oobe</div>
+      <div className={'text-xl font-mono'}>https://xp.misaka.org/</div>
       <div>本项目旨在帮助您快速识别并栅格化您的 xp 以供未来使用。</div>
       {(() => {
         if (!!importedData && importedData !== localData) {

@@ -1,4 +1,4 @@
-import { Config, config, getDesc } from './config'
+import { configs, getDesc, isPlainItem } from './config'
 import emptyBookSrc from '~/assets/empty-book.svg'
 import emptyStarSrc from '~/assets/empty-star.svg'
 import fillBookSrc from '~/assets/fill-book.svg'
@@ -38,13 +38,7 @@ const fillText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 export const generateShareSheet = async (data: ShareSheetData, url: string, sortRule: keyof typeof rule) => {
   const canvas = document.createElement('canvas')
-  const items = sort(config[data.protocolVersion].sections.reduce<Array<Config[string]['sections'][0] | string>>((acc, cur) => {
-    if ('items' in cur) {
-      acc.push(cur)
-      acc.push(...cur.items)
-    } else acc.push(cur)
-    return acc
-  }, []), rule[sortRule], data.items)
+  const items = sort(configs[data.protocolVersion].sections.filter(el => !('shareBehavior' in el) || el.shareBehavior !== 'hidden'), rule[sortRule], data.items)
   const columnCount = 4
   const columnWidth = 800
   const columnGap = 24
@@ -70,7 +64,7 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
   ctx.drawImage(qrcode, qrX, qrPadding)
   fillText(ctx, '扫描二维码在线查看或导入结果', qrX - qrPadding, bannerHeight / 2 - 24, 'right')
   ctx.font = getFont(36)
-  fillText(ctx, '或访问 xp-oobe.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 + 24, 'right')
+  fillText(ctx, '或访问 xp.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 + 24, 'right')
 
   const starColumnWidth = 60
   const contentPaddingLeft = 16
@@ -80,13 +74,13 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
     const column = Math.floor(index / rowCount)
     const x = column * columnWidth + column * columnGap
     const y = bannerHeight + row * lineHeight
-    if (typeof item === 'string') {
+    if (isPlainItem(item)) {
       ctx.fillStyle = index % 2 === 0 ? '#303030' : '#242424'
       ctx.fillRect(x, y, columnWidth, lineHeight)
       ctx.font = getFont(24)
       ctx.fillStyle = '#fff'
-      fillText(ctx, item, x + contentPaddingLeft, y + lineHeight / 2)
-      const { book = 0, star = 0 } = data.items.get(item) ?? {}
+      fillText(ctx, item.label, x + contentPaddingLeft, y + lineHeight / 2)
+      const { book = 0, star = 0 } = data.items.get(item.label) ?? {}
       const desc = getDesc({ book, star })
       ctx.drawImage(book ? fillBook : emptyBook, x + columnWidth - starColumnWidth * 6, y + 12, 48, 48)
       for (let i = 0; i < 5; i++) {
@@ -94,12 +88,14 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
       }
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
       fillText(ctx, desc, x + columnWidth - starColumnWidth * 6 - ctx.measureText(desc).width - contentPaddingLeft, y + lineHeight / 2)
-    } else {
+    } else if ('desc' in item) {
       ctx.font = getFont(24)
       ctx.fillStyle = 'backgroundColor' in item ? item.backgroundColor : '#1d4ed8'
       ctx.fillRect(x, y, columnWidth, lineHeight)
       ctx.fillStyle = '#fff'
-      fillText(ctx, 'displayName' in item ? item.displayName : item.desc, x + contentPaddingLeft, y + lineHeight / 2)
+      fillText(ctx, item.desc, x + contentPaddingLeft, y + lineHeight / 2)
+    } else {
+      throw new Error(`Unrecognizable item: ${JSON.stringify(item)}`)
     }
   }
 

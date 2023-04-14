@@ -1,6 +1,6 @@
 // every ASCII char that will not be encoded in URL.
 // DO NOT modify this string since this will break data reading and writing.
-import { config } from './config'
+import { configs } from './config'
 import { Notification } from '@douyinfe/semi-ui'
 
 // dot is used for splitter
@@ -38,9 +38,9 @@ export interface Data {
 // char is a digit, in the sequence of the above digit const:
 // 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_~'()*-
 export const encodeAndSave = async (data: Data) => {
-  const sourceBitSize = config[data.protocolVersion].bitSize
+  const sourceBitSize = configs[data.protocolVersion].bitSize
   const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).reverse().join('')
-  const dataSequences = config[data.protocolVersion].itemsGroup.map(items => mapItems(items))
+  const dataSequences = configs[data.protocolVersion].itemsGroup.map(items => mapItems(items))
   const encoded = `${data.protocolVersion}.${dataSequences.map(dataSequence => convertBase(dataSequence, sourceBitSize, digits.length)).join('.')}`
   if (encoded.split('.')[1] === '0') {
     localStorage.removeItem('data')
@@ -82,10 +82,10 @@ export const decodeOrLoad = async (): Promise<Data | undefined> => {
   const encoded = read().any
   if (!encoded) return undefined
   const [protocolVersion, ...itemsGroup] = encoded.split('.')
-  if (!config[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)
-  const sourceBitSize = config[protocolVersion].bitSize
+  if (!configs[protocolVersion]) throw new Error(`Invalid protocol version: ${protocolVersion}`)
+  const sourceBitSize = configs[protocolVersion].bitSize
   const decodedGroups = itemsGroup.map((items) => convertBase(items, digits.length, sourceBitSize))
-  if (config.v1.itemsGroup.length < decodedGroups.length) {
+  if (configs.v1.itemsGroup.length < decodedGroups.length) {
     clear()
     Notification.error({ content: '检测到数据损坏。正在清空数据...' })
     setTimeout(() => window.location.reload(), 3000)
@@ -94,6 +94,6 @@ export const decodeOrLoad = async (): Promise<Data | undefined> => {
   return {
     protocolVersion,
     // @ts-expect-error
-    items: decodedGroups.map((item, indexInGroup) => Array.from(item).reverse().map((digit, indexInString) => [config.v1.itemsGroup[indexInGroup][indexInString], parseInt(convertBase(digit, sourceBitSize, 10))] as const)).flat()
+    items: decodedGroups.map((item, indexInGroup) => Array.from(item).reverse().map((digit, indexInString) => [configs.v1.itemsGroup[indexInGroup][indexInString], parseInt(convertBase(digit, sourceBitSize, 10))] as const)).flat()
   }
 }
