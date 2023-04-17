@@ -64,7 +64,7 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
   ctx.drawImage(qrcode, qrX, qrPadding)
   fillText(ctx, '扫描二维码在线查看或导入结果', qrX - qrPadding, bannerHeight / 2 - 24, 'right')
   ctx.font = getFont(36)
-  fillText(ctx, '或访问 xp.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 + 24, 'right')
+  fillText(ctx, '或访问 xp-resume-demo.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 + 24, 'right')
 
   const starColumnWidth = 60
   const contentPaddingLeft = 16

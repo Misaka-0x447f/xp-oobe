@@ -213,7 +213,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
               <div className={'flex flex-col'}>
                 <span className={'text-lg'}>分享海报已生成。</span>
                 <a className={'text-orange-200 decoration-solid'} href={screenShotUrl} target='_blank'
-                   rel="noreferrer" download={'xp.misaka.org.png'}>点击此处下载。</a>
+                   rel="noreferrer" download={'xp-resume-demo.misaka.org.png'}>点击此处下载。</a>
                 <span>如果不能下载，长按下面的图片（iOS 需要长按<span
                   className={'text-yellow-500'}>图片空白处</span>）选择保存即可保存截图。</span>
               </div>
