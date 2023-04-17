@@ -17,6 +17,7 @@ import { SectionTitle } from '../components/SectionTitle'
 import type { XpStar } from '../components/RatingXpStar'
 import { RatingXpStar } from '../components/RatingXpStar'
 import { CustomZone, CustomZoneValue } from '../components/CustomZone'
+import { isEqual } from 'lodash'
 
 export type Entry = Config[string]['sections'][0] | PlainItem
 
@@ -62,6 +63,11 @@ const MainPageEntry = memo(({
       return <SectionTitle title={entry.displayName}/>
     })()}
   </div>
+}, (prev, next) => {
+  if ('label' in prev.entry && 'label' in next.entry) {
+    return prev.data.get(prev.entry.label) === next.data.get(next.entry.label)
+  }
+  return isEqual(prev.data, next.data)
 })
 MainPageEntry.displayName = 'MainPageEntry'
 
