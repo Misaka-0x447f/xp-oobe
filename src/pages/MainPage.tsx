@@ -74,7 +74,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
   const [confirmClearVisible, setConfirmClearVisible] = useState(false)
   const [screenShotVisible, setScreenShotVisible] = useState(false)
   const [sortVisible, setSortVisible] = useState(false)
-  const [sortRule, setSortRule] = useState<keyof typeof rule>('按类别(默认顺序)')
+  const [sortRule, setSortRule] = useState<keyof typeof rule>('按职业(默认顺序)')
   const [aboutVisible, setAboutVisible] = useState(false)
   const entries = useMemo(() => {
     return sort(configs.v1.sections, rule[sortRule], data)
@@ -161,37 +161,10 @@ export const MainPage = (props: { newDocument: boolean }) => {
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
-        <div>本站无后端，所有数据保存在你的本地浏览器上，因此请务必导出填好的数据并自己保管好，我们无法帮你找回。</div>
-        <div>本站域名已迁移至 xp.misaka.org，原域名 xp-oobe.misaka.org
-          依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
-          url，把域名改了，再导入。
-        </div>
-        <div>当前阶段开发目标(2022/11/22 更新)</div>
-        <div className={'ml-6'}>
-          <li>自定义 xp 及打分（也许不能保存）</li>
-          <li>按多个维度排序的功能（先按类别，再按星级）</li>
-          <li>添加马里亚纳海沟区</li>
-          <li>pc 长项目</li>
-          <li>手机长项目排版问题</li>
-          <li>分享海报二维码尺寸问题</li>
-        </div>
-        <div>前端：御坂云见 (Extended Security Support) <a href={'https://twitter.com/MisakaKumomi'}>[twitter]</a></div>
-        <div>测试：fuzhu</div>
-        <div>反馈遗留的条目：<a
-          href={'https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih'}>https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih</a>
-        </div>
+        <div>本站无后端，所有数据保存在本地浏览器上。</div>
         <div>项目地址/bug 反馈：
           <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'}
              target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
-        </div>
-        <div>用户意见群（全球）：<a className={'text-orange-200 decoration-solid'}
-                                 href={'https://t.me/+jzo6ZFZ8365kNDc9'}
-                                 target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
-        <div className={'flex items-center'}>用户意见群（中国大陆）：<a target={'_blank'}
-                                                                     href={'https://jq.qq.com/?_wv=1027&k=iqKi6zeR'}
-                                                                     rel="noreferrer"><img
-          src={'http://pub.idqqimg.com/wpa/images/group.png'} alt={'xp-oobe-join-group'}
-          title={'xp-oobe'}/></a>483446768
         </div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
@@ -251,8 +224,8 @@ export const MainPage = (props: { newDocument: boolean }) => {
           </>}
         </div>}
       {!!saveUrl && <div className={'bg-blue-900 p-4 flex flex-col'}>
-        <div className={'text-xl'}>你的 xp 镜像已准备就绪并可供复制。</div>
-        <div>使用该链接即可返回此页面，并在以后修改你的结果。记得以后回来看看，也许也会新增一些条目。</div>
+        <div className={'text-xl'}>你的结果已准备就绪并可供复制。</div>
+        <div>使用该链接即可返回此页面，并在以后修改你的结果或查看新增的条目。</div>
         <div className={'flex items-center mt-4'}>
           <FluentButton onClick={() => {
             navigator.clipboard.writeText(saveUrl).then(() => {

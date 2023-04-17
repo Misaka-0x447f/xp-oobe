@@ -11,8 +11,8 @@ import { selectCase } from './lang'
 
 // TODO: secondary sort rule
 export const rule: Record<string, [[RuleKeyword, 'asc' | 'desc']]> = {
-  '按类别(默认顺序)': [['category', 'asc']],
-  '按类别(倒序)': [['category', 'desc']],
+  '按职业(默认顺序)': [['category', 'asc']],
+  '按职业(倒序)': [['category', 'desc']],
   '按评分(从高到低)': [['rate', 'desc']],
   '按评分(从低到高)': [['rate', 'asc']],
   // '先按类别(默认顺序)，再按评分(从高到低)': [['category', 'asc'], ['rate', 'asc']],
