@@ -17,7 +17,7 @@ export const LandingPage = () => {
   return <div className="w-screen h-screen flex items-center">
     <div className={'m-8'}>
       <div className={'text-3xl font-mono'}>Project xp-oobe (resume-demo)</div>
-      <div className={'text-xl font-mono'}>https://xp-resume-demo.misaka.org/</div>
+      <div className={'text-xl font-mono'}>https://resume-demo.misaka.org/</div>
       <div>本项目旨在帮助您制作一份您对《明日方舟》中干员的喜爱程度的表单并便于分享给他人。*filtered*</div>
       {(() => {
         if (!!importedData && importedData !== localData) {
