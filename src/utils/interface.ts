@@ -42,24 +42,13 @@ export const encodeAndSave = async (data: Data) => {
   const mapItems = (items: string[]) => items.map(listItem => convertBase((data.items.find(el => el[0] === listItem)?.[1] ?? 0).toString(), 10, sourceBitSize)).reverse().join('')
   const dataSequences = configs[data.protocolVersion].itemsGroup.map(items => mapItems(items))
   const encoded = `${data.protocolVersion}.${dataSequences.map(dataSequence => convertBase(dataSequence, sourceBitSize, digits.length)).join('.')}`
-  if (encoded.split('.')[1] === '0') {
-    localStorage.removeItem('data')
-    const url = new URL(window.location.href)
-    url.searchParams.delete('d')
-    window.history.replaceState({}, 'title', url.toString())
-    return {
-      url,
-      string: encoded
-    }
-  } else {
-    localStorage.setItem('data', encoded)
-    const url = new URL(window.location.href)
-    url.searchParams.set('d', encoded)
-    window.history.replaceState({}, 'title', url.toString())
-    return {
-      url,
-      string: encoded
-    }
+  localStorage.setItem('data', encoded)
+  const url = new URL(window.location.href)
+  url.searchParams.set('d', encoded)
+  window.history.replaceState({}, 'title', url.toString())
+  return {
+    url,
+    string: encoded
   }
 }
 
