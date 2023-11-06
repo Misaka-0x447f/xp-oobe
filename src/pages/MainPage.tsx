@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState } from 'react'
 import {
-  BookInformation24Regular, ChevronCircleDown24Regular, Clipboard3Day24Filled,
+  BookInformation24Regular, ChevronCircleDown24Regular,
   Save28Regular, ShareAndroid24Regular, TagReset24Regular, TextSortAscending24Regular
 } from '@fluentui/react-icons'
 import { Notification, Select } from '@douyinfe/semi-ui'
@@ -41,15 +41,17 @@ const MainPageEntry = memo(({
   setData,
   saveCallback,
   children
-}: { entry: Entry, data: Map<string, XpStar>, index: number, setData: React.Dispatch<React.SetStateAction<Map<string, XpStar>>>, saveCallback: () => void, children: React.ReactNode }) => {
+}: { entry: Entry, data: Record<string, XpStar>, index: number, setData: React.Dispatch<React.SetStateAction<Record<string, XpStar>>>, saveCallback: () => void, children: React.ReactNode }) => {
   return <div>
     {(() => {
       if (isPlainItem(entry)) {
         return <RatingXpStar
           title={entry.label} desc={configs.v1.descs?.[entry.label]} isEven={index % 2 === 0}
-          value={data.get(entry.label)}
+          value={data[entry.label]}
           onChange={(newVal) => {
-            setData(d => new Map(d.set(entry.label, newVal)))
+            setData(d => Object.assign({}, d, {
+              [entry.label]: newVal
+            }))
             saveCallback()
           }}/>
       }
@@ -65,14 +67,14 @@ const MainPageEntry = memo(({
   </div>
 }, (prev, next) => {
   if ('label' in prev.entry && 'label' in next.entry) {
-    return prev.data.get(prev.entry.label) === next.data.get(next.entry.label)
+    return prev.data[prev.entry.label] === next.data[next.entry.label]
   }
   return isEqual(prev.data, next.data)
 })
 MainPageEntry.displayName = 'MainPageEntry'
 
 export const MainPage = (props: { newDocument: boolean }) => {
-  const [data, setData, dataRef] = useMixedState<Map<string, XpStar>>(new Map())
+  const [data, setData, dataRef] = useMixedState<Record<string, XpStar>>({})
   const [customData, setCustomData] = useState<CustomZoneValue[]>([])
   const [screenShotUrl, setScreenShotUrl] = useState<string | null>(null)
   const [saveUrl, setSaveUrl] = useState<string | null>(null)
@@ -116,7 +118,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
 
   const update = async () => await encodeAndSave({
     protocolVersion: 'v1',
-    items: Array.from(dataRef.current.entries()).map(item => [item[0], item[1].book * 6 + item[1].star])
+    items: Array.from(Object.entries(dataRef.current)).map(item => [item[0], item[1].book * 6 + item[1].star])
   })
 
   const sortOptions = useMemo(() => Object.keys(rule).map(key => ({ label: key, value: key })), [])
@@ -124,7 +126,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
   useBeforeMount(() => {
     if (!props.newDocument) {
       decodeOrLoad()
-        .then((data) => setData(new Map(data?.items.map(item => [item[0], {
+        .then((data) => setData(Object.fromEntries(data?.items.map(item => [item[0], {
           book: Math.floor(item[1] / 6),
           star: item[1] % 6
         }]) ?? [])))
@@ -203,7 +205,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
           <FluentButton className={'mr-2'} style={{ backgroundColor: 'rgba(239, 68, 68)' }}
                         icon={<TagReset24Regular/>}
                         onClick={() => {
-                          setData(new Map())
+                          setData({})
                           clear()
                           setConfirmClearVisible(false)
                         }}>重置</FluentButton>
@@ -263,7 +265,9 @@ export const MainPage = (props: { newDocument: boolean }) => {
                 content: '已经复制到剪贴板。'
               })
             })
-          }} icon={<Clipboard3Day24Filled/>}/>
+          }}>
+            复制
+          </FluentButton>
           <span className={'text-white font-mono ml-2'}>{saveUrl}</span>
         </div>
       </div>}

@@ -8,7 +8,7 @@ import { rule, sort } from './sort'
 
 export interface ShareSheetData {
   protocolVersion: 'v1'
-  items: Map<string, { book: number, star: number }>
+  items: Record<string, { book: number, star: number }>
 }
 
 const readImage = async (src: string) => await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -80,7 +80,7 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
       ctx.font = getFont(24)
       ctx.fillStyle = '#fff'
       fillText(ctx, item.label, x + contentPaddingLeft, y + lineHeight / 2)
-      const { book = 0, star = 0 } = data.items.get(item.label) ?? {}
+      const { book = 0, star = 0 } = data.items[item.label] ?? {}
       const desc = getDesc({ book, star })
       ctx.drawImage(book ? fillBook : emptyBook, x + columnWidth - starColumnWidth * 6, y + 12, 48, 48)
       for (let i = 0; i < 5; i++) {

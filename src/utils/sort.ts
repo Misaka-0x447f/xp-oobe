@@ -42,10 +42,10 @@ const sortAsIs = (input: SortResult, dir: 'asc' | 'desc'): SortResult => {
   })
 }
 
-const sortByRate = (input: SortResult, dir: 'asc' | 'desc', data: Map<string, { book: number, star: number }>): SortResult => {
+const sortByRate = (input: SortResult, dir: 'asc' | 'desc', data: Record<string, { book: number, star: number }>): SortResult => {
   const getPriority = (el: PlainItem | DescEntry | CustomZoneEntry) => {
     if (isCustomZoneEntry(el) || isDescEntry(el)) return -1
-    return data.get(el.label)?.star ?? 0
+    return data[el.label]?.star ?? 0
   }
   return input.filter(el => !('sortBehavior' in el) || el.sortBehavior !== 'hidden').sort((alice, bob) => {
     if ('sortBehavior' in alice && alice.sortBehavior === 'top') return -1
@@ -54,10 +54,10 @@ const sortByRate = (input: SortResult, dir: 'asc' | 'desc', data: Map<string, { 
   })
 }
 
-const sortByExperienced = (input: SortResult, dir: 'asc' | 'desc', data: Map<string, { book: number, star: number }>): SortResult => {
+const sortByExperienced = (input: SortResult, dir: 'asc' | 'desc', data: Record<string, { book: number, star: number }>): SortResult => {
   const getPriority = (el: PlainItem | DescEntry | CustomZoneEntry) => {
     if (isCustomZoneEntry(el) || isDescEntry(el)) return -1
-    return data.get(el.label)?.book ?? 0
+    return data[el.label]?.book ?? 0
   }
   return input.filter(el => !('sortBehavior' in el) || el.sortBehavior !== 'hidden')
     .sort((alice, bob) => {
@@ -68,7 +68,7 @@ const sortByExperienced = (input: SortResult, dir: 'asc' | 'desc', data: Map<str
 }
 
 // TODO: secondary sort rule
-export const sort = (source: Config[string]['sections'], rule: [[RuleKeyword, 'asc' | 'desc']], data: Map<string, { book: number, star: number }>): Array<PlainItem | DescEntry | CustomZoneEntry> => {
+export const sort = (source: Config[string]['sections'], rule: [[RuleKeyword, 'asc' | 'desc']], data: Record<string, { book: number, star: number }>): Array<PlainItem | DescEntry | CustomZoneEntry> => {
   let res: SortResult = []
   for (const el of source) {
     if (isGroupEntry(el)) {
