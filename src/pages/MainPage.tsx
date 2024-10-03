@@ -174,23 +174,10 @@ export const MainPage = (props: { newDocument: boolean }) => {
           依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
           url，把域名改了，再导入。
         </div>
-        <div>更新日志(2023/11/06 更新)</div>
-        <div>此项目后续可能不会活跃开发，抓我去喝茶就不好了，而且有些条目我自己确实不够变态无法理解。就这么用吧，有新的条目要加也还是可以加。</div>
-        <div>卫星：</div>
-        <div className={'ml-6'}>
-          <li>自定义 xp 及打分（限制 10 个以内）</li>
-          <li>按多个维度排序的功能（先按类别，再按星级）</li>
-          <li>添加马里亚纳海沟区</li>
-          <li>pc 长项目</li>
-          <li>手机长项目排版问题</li>
-          <li>分享海报二维码尺寸问题</li>
-        </div>
-        <div>反馈遗留的条目：<a
+        <div>更新日志(2024/10/03 更新)</div>
+        <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，但仍可通过下面的反馈链接提交新条目。</div>
+        <div>反馈链接：<a
           href={'https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih'}>https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih</a>
-        </div>
-        <div>项目地址/bug 反馈：
-          <a className={'text-orange-200 decoration-solid'} href={'https://github.com/Misaka-0x447f/xp-oobe'}
-             target={'_blank'} rel="noreferrer">https://github.com/Misaka-0x447f/xp-oobe</a>
         </div>
         <div>用户意见群（全球）：<a className={'text-orange-200 decoration-solid'}
                                  href={'https://t.me/+jzo6ZFZ8365kNDc9'}
