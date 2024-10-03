@@ -134,7 +134,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
     }
   })
 
-  return (<div className="w-screen h-screen flex flex-col">
+  return (<div className="w-full h-screen flex flex-col">
     <div className={['w-full bg-blue-500 flex justify-between align-center sticky box-border pl-1.3 pr-3',
       '[&>button.semi-button.semi-button-tertiary]:text-white',
       '[&>button.semi-button.semi-button-tertiary]:h-full'].join(' ')}>
@@ -169,7 +169,6 @@ export const MainPage = (props: { newDocument: boolean }) => {
       {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
-        <div>本站无后端，所有数据保存在你的本地浏览器上，因此请务必导出填好的数据并自己保管好，我们无法帮你找回。</div>
         <div>本站域名已迁移至 xp.misaka.org，原域名 xp-oobe.misaka.org
           依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
           url，把域名改了，再导入。
