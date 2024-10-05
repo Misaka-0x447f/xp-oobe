@@ -173,8 +173,9 @@ export const MainPage = (props: { newDocument: boolean }) => {
           依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
           url，把域名改了，再导入。
         </div>
-        <div>更新日志(2024/10/03 更新)</div>
+        <div>更新日志(2024/10/05 更新)</div>
         <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，但仍可通过下面的反馈链接提交新条目。</div>
+        <div>新增 4 个条目。</div>
         <div>反馈链接：<a
           href={'https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih'}>https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih</a>
         </div>
