@@ -173,21 +173,14 @@ export const MainPage = (props: { newDocument: boolean }) => {
           依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
           url，把域名改了，再导入。
         </div>
-        <div>更新日志(2024/10/05 更新)</div>
-        <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，但仍可通过下面的反馈链接提交新条目。</div>
-        <div>新增 4 个条目。</div>
-        <div>反馈链接：<a
-          href={'https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih'}>https://wenjuan.feishu.cn/m?t=svmwm5XzhvJi-1yih</a>
-        </div>
-        <div>用户意见群（全球）：<a className={'text-orange-200 decoration-solid'}
-                                 href={'https://t.me/+jzo6ZFZ8365kNDc9'}
-                                 target={'_blank'} rel="noreferrer">https://t.me/+jzo6ZFZ8365kNDc9</a></div>
+        <div>更新日志(2024/11/08 更新)</div>
+        <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，也不再接受新条目反馈。</div>
         <div className={'flex items-center'}>
           用户意见群（中国大陆）已关闭。
         </div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
-        <span className={'text-xl'}>确实要重置表单吗？</span>
+        <span className={'text-xl'}>确实想要重置表单吗？</span>
         <div className={'flex mt-2'}>
           <FluentButton className={'mr-2'} style={{ backgroundColor: 'rgba(239, 68, 68)' }}
                         icon={<TagReset24Regular/>}
