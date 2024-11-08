@@ -175,9 +175,6 @@ export const MainPage = (props: { newDocument: boolean }) => {
         </div>
         <div>更新日志(2024/11/08 更新)</div>
         <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，也不再接受新条目反馈。</div>
-        <div className={'flex items-center'}>
-          用户意见群（中国大陆）已关闭。
-        </div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实想要重置表单吗？</span>
