@@ -6,8 +6,7 @@ import {
 import { Notification, Select } from '@douyinfe/semi-ui'
 import { Config, configs, isPlainItem, PlainItem } from '../utils/config'
 import { TooltipButton } from '../components/TooltipButton'
-import { Progress } from '@fluentui/react-components/unstable'
-import { Button as FluentButton, Spinner } from '@fluentui/react-components'
+import { Button as FluentButton, Spinner, ProgressBar } from '@fluentui/react-components'
 import { clear, decodeOrLoad, encodeAndSave } from '../utils/interface'
 import { useBeforeMount, useMixedState } from '../utils/hooks'
 import { generateShareSheet } from '../utils/shareSheet'
@@ -166,15 +165,15 @@ export const MainPage = (props: { newDocument: boolean }) => {
                      active={!!saveUrl}><Save28Regular className={'h-6'}/><span>保存</span></TooltipButton>
     </div>
     <div className={'w-full box-border'}>
-      {!!loading && <Progress thickness={'large'} shape={'rectangular'}/>}
+      {!!loading && <ProgressBar thickness={'large'} shape={'rounded'}/>}
       {aboutVisible && <div className={'bg-blue-900 p-4 flex flex-col'}>
         <div className={'text-xl'}>关于</div>
         <div>本站域名已迁移至 xp.misaka.org，原域名 xp-oobe.misaka.org
           依然有效，由于数据只保存在你的本地浏览器以及太懒了不想做，这两个站数据不互通，请人工迁移数据，具体方法就是导出
           url，把域名改了，再导入。
         </div>
-        <div>更新日志(2024/11/08 更新)</div>
-        <div>此项目由于作者确实不够变态无法理解而不再加入新功能或进行 bug 修复，也不再接受新条目反馈。</div>
+        <div>更新日志(2025/08/01 更新)</div>
+        <div>此项目由于众所周知的原因需要避免热度，因此全局启用 cloudflare challenge，也不再接受新条目反馈。</div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实想要重置表单吗？</span>
