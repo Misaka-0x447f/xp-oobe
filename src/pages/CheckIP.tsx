@@ -7,7 +7,7 @@ export const CheckIP = () => {
   const [failed, setFailed] = useState(false)
   useBeforeMount(() => {
     (async () => {
-      const res = await fetch('https://ip.misaka.org').catch(() => {
+      const res = await fetch('https://geoip.misaka.org').catch(() => {
         setFailed(true)
       })
       const data = await res?.json().catch(() => {
