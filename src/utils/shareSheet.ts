@@ -62,9 +62,11 @@ export const generateShareSheet = async (data: ShareSheetData, url: string, sort
   const qrPadding = (bannerHeight - qrcodeSize) / 3
   const qrX = canvas.width - qrcodeSize - qrPadding * 2
   ctx.drawImage(qrcode, qrX, qrPadding)
-  fillText(ctx, '扫描二维码在线查看或导入结果', qrX - qrPadding, bannerHeight / 2 - 24, 'right')
+  fillText(ctx, '扫描二维码在线查看或导入结果', qrX - qrPadding, bannerHeight / 2 - 72, 'right')
   ctx.font = getFont(36)
-  fillText(ctx, '或访问 xp.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 + 24, 'right')
+  fillText(ctx, '或访问 xp.misaka.org，开始制作你的 xp 镜像', qrX - qrPadding, bannerHeight / 2 - 24, 'right')
+  ctx.font = getFont(24)
+  fillText(ctx, '由于众所周知的原因，此项目需要避免不必要的麻烦也不想需要科学上网才能用，因此全局开启人机验证', qrX - qrPadding, bannerHeight / 2 + 12, 'right')
 
   const starColumnWidth = 60
   const contentPaddingLeft = 16
