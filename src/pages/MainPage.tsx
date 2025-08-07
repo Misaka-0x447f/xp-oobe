@@ -173,7 +173,7 @@ export const MainPage = (props: { newDocument: boolean }) => {
           url，把域名改了，再导入。
         </div>
         <div>更新日志(2025/08/01 更新)</div>
-        <div>此项目由于众所周知的原因需要避免热度，因此全局启用 cloudflare challenge，也不再接受新条目反馈。</div>
+        <div>由于众所周知的原因，此项目需要避免不必要的麻烦，因此不对中国大陆提供任何服务，居住在中国大陆的用户请勿使用，也不再接受新条目反馈。</div>
       </div>}
       {confirmClearVisible && <div className={'bg-orange-900 p-4 flex flex-col'}>
         <span className={'text-xl'}>确实想要重置表单吗？</span>
